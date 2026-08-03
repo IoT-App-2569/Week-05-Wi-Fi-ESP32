@@ -1,3 +1,3 @@
 idf_component_register(SRCS "main.c"
-                    INCLUDE_DIRS "."
-                    REQUIRES driver esp_driver_gpio)
+                       INCLUDE_DIRS "."
+                       PRIV_REQUIRES esp_event esp_wifi nvs_flash esp_timer)
