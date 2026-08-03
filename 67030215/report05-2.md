@@ -1,21 +1,43 @@
-6. ตารางบันทึกผลการทดลอง (Experiment Results)
+## 6. ตารางบันทึกผลการทดลอง (Experiment Results)
+
 ให้นักศึกษาบันทึกผลลัพธ์จากการสังเกตใน Serial Console ลงในตารางต่อไปนี้:
 
-6.1 ตารางสรุปเปรียบเทียบผลการทดลองทั้ง 3 สถานการณ์
-ข้อการทดลอง	สถานการณ์ทดสอบ	Event สุดท้ายที่ได้รับ	ผลลัพธ์ (Passed/Failed)	Reason Code (Decimal / Hex)	คำอธิบาย Reason Code
-5.2.1	SSID และ Password ถูกต้อง				
-5.2.2	ระบุ SSID ผิด (ไม่มีในระบบ)				
-5.2.3	ระบุ SSID ถูกต้อง แต่ Password ผิด				
-6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
-พารามิเตอร์เครือข่าย	ค่าที่ได้รับจริงจาก DHCP
-SSID	
-BSSID (MAC Address)	
-Channel	
-IP Address	
-Subnet Mask	
-Default Gateway	
-7. คำถามท้ายการทดลอง (Post-Lab Questions)
-เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code 201 (WIFI_REASON_NO_AP_FOUND) ตั้งแต่เฟส Scan?
-เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code 15 หรือ 204)?
-ลำดับการเกิด Event ระหว่าง WIFI_EVENT_STA_CONNECTED กับ IP_EVENT_STA_GOT_IP Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
-สมาชิกตัวแปร reason ในโครงสร้าง wifi_event_sta_disconnected_t มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองทั้ง 3 สถานการณ์
+
+| ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
+| :---: | :--- | :---: | :---: | :---: | :--- |
+| **5.2.1** | SSID และ Password ถูกต้อง |IP_EVENT_STA_GOT_IP|Passed |	-|เชื่อมต่อ AP สำเร็จและได้รับ IP Address จาก DHCP |
+| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) |WIFI_EVENT_STA_DISCONNECTED|Failed |8 / 0x08 |OTHER_DISCONNECT_REASON |
+| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด |WIFI_EVENT_STA_DISCONNECTED |Failed |2 / 0x02 | WIFI_REASON_AUTH_EXPIRE (2)|
+
+### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
+
+| พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
+| :--- | :--- |
+| **SSID** |IG:_cxii_hdrr |
+| **BSSID (MAC Address)** |DE:F7:ED:C6:B6:23 |
+| **Channel** | 1|
+| **IP Address** |172.20.10.2|
+| **Subnet Mask** |255.255.255.240 |
+| **Default Gateway** |172.20.10.1 |
+
+---
+
+## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
+
+1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
+```c
+=เมื่อ ESP32 สแกนหา SSID ที่ระบุแล้วไม่พบสัญญาณของ Access Point นั้นในบริเวณ (เพราะพิมพ์ชื่อผิดหรือ AP ไม่มีอยู่จริง) กระบวนการเชื่อมต่อจะไม่สามารถผ่านพ้นเฟส Scan ไปได้เลย เพราะไม่มีเป้าหมายให้ยิง Authentication Request ต่อ จึงเกิด Disconnect Event ทันทีด้วย Reason Code 201 ซึ่งสื่อความหมายตรงตัวว่า "หา AP ไม่เจอ"
+```
+2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
+```c
+=เนื่องจาก SSID ถูกต้องทำให้ ESP32 มองเห็นและจับคู่กับ AP ได้ตามปกติ จึงผ่านเฟส Authentication และ Association ไปได้อย่างราบรื่นเพราะสองเฟสนี้เป็นเพียงการยืนยันตัวตนเบื้องต้นที่ยังไม่ตรวจสอบรหัสผ่านจริง แต่พอเข้าสู่เฟส 4-Way Handshake ซึ่งเป็นขั้นตอนที่ทั้งสองฝ่ายต้องคำนวณกุญแจเข้ารหัส (PMK/PTK) จาก Password ที่ใส่ไว้ หากรหัสผ่านผิด ค่าที่คำนวณได้จะไม่ตรงกัน ทำให้ Handshake ล้มเหลวและเกิด Disconnect ด้วย Reason Code 15 หรือ 204
+```
+3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
+```c
+=WIFI_EVENT_STA_CONNECTED จะเกิดขึ้นก่อนเสมอ เพราะเป็นการยืนยันว่าการเชื่อมต่อในระดับ Layer 2 (Data Link Layer) สำเร็จแล้ว คืออุปกรณ์เข้าร่วมเครือข่าย Wi-Fi ได้แล้วแต่ยังไม่มี IP Address ส่วน IP_EVENT_STA_GOT_IP จะเกิดตามมาทีหลังหลังจากกระบวนการ DHCP เสร็จสมบูรณ์ ซึ่งสะท้อนความสำเร็จในระดับ Layer 3 (Network Layer) ที่อุปกรณ์พร้อมสื่อสารผ่าน IP ได้
+```
+4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+```c
+=ตัวแปร reason ทำหน้าที่เป็นข้อมูลเชิงบริบทที่บอกสาเหตุที่แท้จริงของการหลุดการเชื่อมต่อ ทำให้แอปพลิเคชันสามารถเขียน Logic การจัดการที่แตกต่างกันไปตามสาเหตุได้ เช่น หากเป็นปัญหารหัสผ่านผิดควรหยุดพยายามเชื่อมต่อซ้ำแล้วแจ้งผู้ใช้แทนที่จะ Retry ไม่รู้จบ แต่ถ้าเป็นปัญหาสัญญาณอ่อนหรือ AP ปิดชั่วคราวก็สามารถออกแบบให้ระบบ Auto-Reconnect พยายามเชื่อมต่อใหม่เป็นระยะ
+```
