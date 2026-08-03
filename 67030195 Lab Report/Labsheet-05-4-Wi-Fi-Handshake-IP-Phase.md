@@ -328,24 +328,221 @@ void app_main(void) {
 
 ### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองใน Handshake & IP Phase
 
-| ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
-| :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| ข้อการทดลอง | สถานการณ์ทดสอบ   | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
+| :---------: | :--------------- | :---------------------------------------------: | :----------------------------------------: | :--------: | :----------------------------- |
+|  **5.4.1**  | Password ถูกต้อง |                      เกิด                       |                    เกิด                    |   Passed   | -                              |
+|  **5.4.2**  | Password ผิด     |                      เกิด                       |                  ไม่เกิด                   |   Failed   | 204                            |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
-| :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| :------------------------ | :--------------------------------- |
+| **IP Address**            | 10.109.193.221                     |
+| **Subnet Mask**           | 255.255.255.0                      |
+| **Default Gateway**       | 10.109.193.230                     |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+**คำตอบ:** 
+เพราะระบบใช้การแลกเปลี่ยนเฟรม EAPOL-Key (ส่งแค่ค่าสุ่ม ANonce และ SNonce) เพื่อนำไปคำนวณคีย์ชั่วคราว แล้วใช้ค่า MIC (Message Integrity Code) ในการยืนยันว่าทั้งสองฝั่งมีรหัสผ่านตรงกันจริง โดยไม่ต้องส่งตัวรหัสผ่านจริงออกไป
+
 2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+**คำตอบ:**
+- **PMK:** คือคีย์หลักที่คำนวณมาจากรหัสผ่าน Wi-Fi (Password) ของเรา
+- **PTK:** คือคีย์ชั่วคราวสำหรับการเข้ารหัสข้อมูลแต่ละครั้ง ซึ่งสร้างมาจากการนำ PMK มารวมกับค่าสุ่ม (ANonce, SNonce) เพื่อความปลอดภัยสูงสุด
+
 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
+**คำตอบ:**
+เพราะในเฟสที่ 2 และ 3 (Link-Layer) เป็นการผูกสัมพันธ์เบื้องต้นแบบยังไม่ตรวจรหัสผ่าน จึงเกิด Event `STA_CONNECTED` ขึ้นก่อน หลังจากนั้นรหัสผ่านถึงจะถูกตรวจสอบในเฟส 4-Way Handshake เมื่อพบว่ารหัสผิดจึงถูกตัดการเชื่อมต่อ (เกิด Event `STA_DISCONNECTED`) ตามมา
+
 4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+**คำตอบ:**
+จะหยุดอยู่ที่เฟส 4 (4-Way Handshake สำเร็จ) แต่กระบวนการจะค้างอยู่ที่เฟส 5 และจะไม่เกิด Event `IP_EVENT_STA_GOT_IP` ขึ้น
+
+
+**LOG**
+```
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6380
+ho 0 tail 12 room 4
+load:0x40078000,len:15916
+load:0x40080400,len:3860
+--- 0x40080400: _invalid_pc_placeholder at C:/Users/Rusneeda/esp/v5.5.1/esp-idf/components/xtensa/xtensa_vectors.S:2235
+entry 0x40080638
+--- 0x40080638: call_start_cpu0 at C:/Users/Rusneeda/esp/v5.5.1/esp-idf/components/bootloader/subproject/main/bootloader_start.c:25
+I (29) boot: ESP-IDF v5.5.1 2nd stage bootloader
+I (29) boot: compile time Aug  3 2026 10:54:29
+I (29) boot: Multicore bootloader
+I (31) boot: chip revision: v3.1
+I (33) boot.esp32: SPI Speed      : 40MHz
+I (37) boot.esp32: SPI Mode       : DIO
+I (41) boot.esp32: SPI Flash Size : 2MB
+I (44) boot: Enabling RNG early entropy source...
+I (49) boot: Partition Table:
+I (51) boot: ## Label            Usage          Type ST Offset   Length
+I (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (71) boot:  2 factory          factory app      00 00 00010000 00100000
+I (77) boot: End of partition table
+I (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=19ee8h (106216) map
+I (124) esp_image: segment 1: paddr=00029f10 vaddr=3ffb0000 size=03eech ( 16108) load
+I (130) esp_image: segment 2: paddr=0002de04 vaddr=40080000 size=02214h (  8724) load
+I (134) esp_image: segment 3: paddr=00030020 vaddr=400d0020 size=861f0h (549360) map
+I (323) esp_image: segment 4: paddr=000b6218 vaddr=40082214 size=15bf8h ( 89080) load
+I (358) esp_image: segment 5: paddr=000cbe18 vaddr=50000000 size=00020h (    32) load
+I (370) boot: Loaded app from partition at offset 0x10000
+I (370) boot: Disabling RNG early entropy source...
+I (381) cpu_start: Multicore app
+I (389) cpu_start: Pro cpu start user code
+I (389) cpu_start: cpu freq: 160000000 Hz
+I (389) app_init: Application information:
+I (389) app_init: Project name:     wifi_scan_phase
+I (394) app_init: App version:      1
+I (397) app_init: Compile time:     Aug  3 2026 10:53:55
+I (402) app_init: ELF file SHA256:  c88477eaa...
+I (407) app_init: ESP-IDF:          v5.5.1
+I (410) efuse_init: Min chip rev:     v0.0
+I (414) efuse_init: Max chip rev:     v3.99 
+I (418) efuse_init: Chip rev:         v3.1
+I (422) heap_init: Initializing. RAM available for dynamic allocation:
+I (428) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+I (433) heap_init: At 3FFB7FD0 len 00028030 (160 KiB): DRAM
+I (439) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+I (444) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+I (450) heap_init: At 40097E0C len 000081F4 (32 KiB): IRAM
+W (456) spi_flash: Detected boya flash chip but using generic driver. For optimal functionality, enable `SPI_FLASH_SUPPORT_BOYA_CHIP` in menuconfig
+I (468) spi_flash: detected chip: generic
+I (471) spi_flash: flash io: dio
+W (474) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.
+I (488) main_task: Started on CPU0
+I (498) main_task: Calling app_main()
+I (498) LAB_HANDSHAKE_IP: [FORENSIC]: Call nvs_flash_init()
+I (518) LAB_HANDSHAKE_IP: [FORENSIC]: nvs_flash_init() returned ESP_OK (0x0)
+I (518) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_netif_init()
+I (518) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_event_loop_create_default()
+I (528) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_netif_create_default_wifi_sta()
+I (528) LAB_HANDSHAKE_IP: [FORENSIC]: esp_netif_create_default_wifi_sta() returned 0x3ffbd8bc
+I (538) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_init(&cfg)
+I (558) wifi:wifi driver task: 3ffbffa8, prio:23, stack:6656, core=0
+I (568) wifi:wifi firmware version: 14da9b7
+I (568) wifi:wifi certification version: v7.0
+I (568) wifi:config NVS flash: enabled
+I (568) wifi:config nano formatting: disabled
+I (578) wifi:Init data frame dynamic rx buffer num: 32
+I (578) wifi:Init static rx mgmt buffer num: 5
+I (578) wifi:Init management short buffer num: 32
+I (588) wifi:Init dynamic tx buffer num: 32
+I (588) wifi:Init static rx buffer size: 1600
+I (598) wifi:Init static rx buffer num: 10
+I (598) wifi:Init dynamic rx buffer num: 32
+I (608) wifi_init: rx ba win: 6
+I (608) wifi_init: accept mbox: 6
+I (608) wifi_init: tcpip mbox: 32
+I (608) wifi_init: udp mbox: 6
+I (618) wifi_init: tcp mbox: 6
+I (618) wifi_init: tcp tx win: 5760
+I (618) wifi_init: tcp rx win: 5760
+I (628) wifi_init: tcp mss: 1440
+I (628) wifi_init: WiFi IRAM OP enabled
+I (628) wifi_init: WiFi RX IRAM OP enabled
+I (638) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_event_handler_instance_register(WIFI_EVENT)
+I (638) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_event_handler_instance_register(IP_EVENT)
+I (648) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)
+I (658) LAB_HANDSHAKE_IP: ==================================================================
+I (668) LAB_HANDSHAKE_IP:   Lab 5.4: 4-Way Handshake & IP Assignment Phase (ESP-IDF Forensic)
+I (668) LAB_HANDSHAKE_IP: ==================================================================
+I (678) LAB_HANDSHAKE_IP: 
+
+I (688) LAB_HANDSHAKE_IP: ------------------------------------------------------------------
+I (688) LAB_HANDSHAKE_IP: >>> Experiment 5.4.1: Handshake & IP Test - Correct Password
+I (698) LAB_HANDSHAKE_IP: ------------------------------------------------------------------
+I (708) LAB_HANDSHAKE_IP:   Target SSID    : "RusneedaK."
+I (708) LAB_HANDSHAKE_IP:   Target Password: "12345678"
+I (718) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_stop()
+I (718) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (728) LAB_HANDSHAKE_IP: [FORENSIC]: esp_wifi_set_config() returned ESP_OK (0x0)
+I (738) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_start()
+I (748) phy_init: phy_version 4861,b71b5ad,Aug  5 2025,11:16:06
+I (828) phy_init: Saving new calibration data due to checksum failure or outdated calibration data, mode(0)
+I (888) wifi:mode : sta (14:08:08:a5:50:c4)
+I (888) wifi:enable tsf
+I (888) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT ID 43 received
+I (898) LAB_HANDSHAKE_IP: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)
+I (898) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (908) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_connect()
+I (918) LAB_HANDSHAKE_IP: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)
+I (1178) wifi:new:<11,0>, old:<1,0>, ap:<255,255>, sta:<11,0>, prof:1, snd_ch_cfg:0x0
+I (1188) wifi:state: init -> auth (0xb0)
+I (1188) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT ID 43 received
+I (1198) wifi:state: auth -> assoc (0x0)
+I (1208) wifi:state: assoc -> run (0x10)
+I (1228) wifi:connected with RusneedaK., aid = 2, channel 11, BW20, bssid = fa:53:78:e7:6d:f8
+I (1228) wifi:security: WPA2-PSK, phy: bgn, rssi: -68
+I (1238) wifi:pm start, type: 1
+
+I (1238) wifi:dp: 1, bi: 102400, li: 3, scale listen interval from 307200 us to 307200 us
+I (1238) LAB_HANDSHAKE_IP: =======================================================
+I (1248) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (1248) LAB_HANDSHAKE_IP:   -> Phase 2 (Auth) & Phase 3 (Assoc) PASSED
+I (1258) LAB_HANDSHAKE_IP:   -> Connected SSID  : RusneedaK.
+I (1268) LAB_HANDSHAKE_IP:   -> BSSID           : FA:53:78:E7:6D:F8
+I (1268) LAB_HANDSHAKE_IP:   -> Channel         : 11
+I (1278) LAB_HANDSHAKE_IP:   -> Association ID  : 3
+I (1278) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 4: 4-Way EAPOL Key Exchange...
+I (1288) LAB_HANDSHAKE_IP: =======================================================
+I (1298) wifi:dp: 2, bi: 102400, li: 4, scale listen interval from 307200 us to 409600 us
+I (1298) wifi:AP's beacon interval = 102400 us, DTIM period = 2
+I (2268) esp_netif_handlers: sta ip: 10.109.193.221, mask: 255.255.255.0, gw: 10.109.193.230
+I (2268) LAB_HANDSHAKE_IP: =======================================================
+I (2268) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!
+I (2278) LAB_HANDSHAKE_IP:   [SUCCESS]: Phase 4 (4-Way Handshake) & Phase 5 (DHCP IP) COMPLETED!
+I (2288) LAB_HANDSHAKE_IP:   -> Allocated IP Address : 10.109.193.221
+I (2288) LAB_HANDSHAKE_IP:   -> Subnet Mask          : 255.255.255.0
+I (2298) LAB_HANDSHAKE_IP:   -> Default Gateway      : 10.109.193.230
+I (2298) LAB_HANDSHAKE_IP: =======================================================
+I (2308) LAB_HANDSHAKE_IP: [RESULT]: TEST PASSED - 4-Way Handshake & DHCP IP Assignment Successful!
+I (4318) LAB_HANDSHAKE_IP: 
+
+I (4318) LAB_HANDSHAKE_IP: ------------------------------------------------------------------
+I (4318) LAB_HANDSHAKE_IP: >>> Experiment 5.4.2: Handshake Test - Incorrect Password
+I (4318) LAB_HANDSHAKE_IP: ------------------------------------------------------------------
+I (4328) LAB_HANDSHAKE_IP:   Target SSID    : "RusneedaK."
+I (4338) LAB_HANDSHAKE_IP:   Target Password: "WRONG_PASSWORD_1234"
+I (4338) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_stop()
+I (4348) wifi:state: run -> init (0x0)
+I (4358) wifi:pm stop, total sleep time: 2629067 us / 3118013 us
+
+I (4358) wifi:new:<11,0>, old:<11,0>, ap:<255,255>, sta:<11,0>, prof:1, snd_ch_cfg:0x0
+W (4368) LAB_HANDSHAKE_IP: =======================================================
+W (4368) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (4378) LAB_HANDSHAKE_IP:   -> Target SSID          : RusneedaK.
+W (4378) LAB_HANDSHAKE_IP:   -> Reason Code (Decimal): 8
+W (4388) LAB_HANDSHAKE_IP:   -> Reason Code (Hex)    : 0x08
+W (4398) LAB_HANDSHAKE_IP:   -> Reason Diagnosis     : OTHER_DISCONNECT_REASON
+W (4398) LAB_HANDSHAKE_IP: =======================================================
+I (4408) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT ID 3 received
+I (4418) wifi:flush txq
+I (4418) wifi:stop sw txq
+I (4418) wifi:lmac stop hw txq
+I (4418) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (4458) LAB_HANDSHAKE_IP: [FORENSIC]: esp_wifi_set_config() returned ESP_OK (0x0)
+I (4458) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_start()
+I (4458) wifi:mode : sta (14:08:08:a5:50:c4)
+I (4458) wifi:enable tsf
+I (4458) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT ID 43 received
+I (4468) LAB_HANDSHAKE_IP: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)
+I (4468) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (4478) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_connect()
+I (4488) LAB_HANDSHAKE_IP: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)
+W (4498) LAB_HANDSHAKE_IP: [RESULT]: TEST FAILED - Disconnected during Handshake or Auth.
+I (4748) LAB_HANDSHAKE_IP: ==================================================================
+I (4748) LAB_HANDSHAKE_IP:   [Phase 4 & Phase 5 Completed: Wi-Fi Handshake & IP Lab Finished]
+I (4798) LAB_HANDSHAKE_IP: ==================================================================
+I (4798) main_task: Returned from app_main()
+```
