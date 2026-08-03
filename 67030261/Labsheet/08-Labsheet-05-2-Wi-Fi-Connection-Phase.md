@@ -7,9 +7,9 @@
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ                     |                 Event สุดท้ายที่ได้รับ                  |           ผลลัพธ์ (Passed/Failed)           | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code        |
 | :---------: | :--------------------------------- | :-----------------------------------------------------: | :-----------------------------------------: | :-------------------------: | :-------------------------- |
-|  **5.2.1**  | SSID และ Password ถูกต้อง          |     [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!     | TEST PASSED - Connected to AP successfully! |                             |                             |
-|  **5.2.2**  | ระบุ SSID ผิด (ไม่มีในระบบ)        |      [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED      | TEST FAILED - Disconnected event captured.  |            0x08             | OTHER_DISCONNECT_REASON     |
-|  **5.2.3**  | ระบุ SSID ถูกต้อง แต่ Password ผิด | [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received! | TEST FAILED - Disconnected event captured.  |            0x02             | WIFI_REASON_AUTH_EXPIRE (2) |
+|  **5.2.1**  | SSID และ Password ถูกต้อง          |     IP_EVENT_STA_GOT_IP received     | TEST PASSED - Connected to AP successfully! |                             |                             |
+|  **5.2.2**  | ระบุ SSID ผิด (ไม่มีในระบบ)        |       WIFI_EVENT_STA_DISCONNECTED      | TEST FAILED - Disconnected event captured.  |            0x08             | 	ASSOC_LEAVE	หา SSID ไม่เจอ → STA ยกเลิกเอง|
+|  **5.2.3**  | ระบุ SSID ถูกต้อง แต่ Password ผิด | WIFI_EVENT_STA_DISCONNECTED | TEST FAILED - Disconnected event captured.  |            0x02             | 	SSID ถูกต้อง แต่รหัสผ่านผิด → 4-way handshake ล้มเหลว |
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
