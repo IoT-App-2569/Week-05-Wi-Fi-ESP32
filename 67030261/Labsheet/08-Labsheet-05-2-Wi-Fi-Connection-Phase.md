@@ -5,11 +5,11 @@
 
 ### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองทั้ง 3 สถานการณ์
 
-| ข้อการทดลอง | สถานการณ์ทดสอบ                     |                 Event สุดท้ายที่ได้รับ                  |           ผลลัพธ์ (Passed/Failed)           | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code                                                                                                                                                                                                                      |
-| :---------: | :--------------------------------- | :-----------------------------------------------------: | :-----------------------------------------: | :-------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  **5.2.1**  | SSID และ Password ถูกต้อง          |     [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!     | TEST PASSED - Connected to AP successfully! |                             |                                                                                                                                                                                                                                           |
-|  **5.2.2**  | ระบุ SSID ผิด (ไม่มีในระบบ)        |              WIFI_EVENT_STA_START received              | TEST FAILED - Disconnected event captured.  |            0x08             | คือ WIFI_REASON_ASSOC_LEAVE คำอธิบาย Disassociated because sending STA is leaving (or has left) BSS เกิด Disassociation ใน Association เฟส 3 เนื่องจากฝั่งใดฝั่งหนึ่ง  กำลังจะออกจากเครือข่าย BSS  นั้นๆ                                  |
-|  **5.2.3**  | ระบุ SSID ถูกต้อง แต่ Password ผิด | [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received! | TEST FAILED - Disconnected event captured.  |            0x02             | คือ WIFI_REASON_AUTH_EXPIRE คำอธิบาย Previous authentication no longer valid เกิดการหมดเวลาหรือสิ้นสุดสถานะการยืนยันตัวตนใน Auth Phase เฟสย่อยที่ 2 เนื่องจากไม่ได้รับการตอบรับจาก AP ในเวลาที่กำหนด หรือ Authentication เดิมใช้การไม่ได้ |
+| ข้อการทดลอง | สถานการณ์ทดสอบ                     |                 Event สุดท้ายที่ได้รับ                  |           ผลลัพธ์ (Passed/Failed)           | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code        |
+| :---------: | :--------------------------------- | :-----------------------------------------------------: | :-----------------------------------------: | :-------------------------: | :-------------------------- |
+|  **5.2.1**  | SSID และ Password ถูกต้อง          |     [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!     | TEST PASSED - Connected to AP successfully! |                             |                             |
+|  **5.2.2**  | ระบุ SSID ผิด (ไม่มีในระบบ)        |      [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED      | TEST FAILED - Disconnected event captured.  |            0x08             | OTHER_DISCONNECT_REASON     |
+|  **5.2.3**  | ระบุ SSID ถูกต้อง แต่ Password ผิด | [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received! | TEST FAILED - Disconnected event captured.  |            0x02             | WIFI_REASON_AUTH_EXPIRE (2) |
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
