@@ -366,28 +366,43 @@ void app_main(void) {
 
 ### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองทั้ง 3 สถานการณ์
 
-| ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
-| :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.2.1** | SSID และ Password ถูกต้อง | | | | |
-| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | | | | |
-| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | | | | |
+| ข้อการทดลอง | สถานการณ์ทดสอบ                     |    Event สุดท้ายที่ได้รับ    |           ผลลัพธ์ (Passed/Failed)           | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code                                                 |
+| :---------: | :--------------------------------- | :--------------------------: | :-----------------------------------------: | :-------------------------: | :------------------------------------------------------------------- |
+|  **5.2.1**  | SSID และ Password ถูกต้อง          | IP_EVENT_STA_GOT_IP received | TEST PASSED - Connected to AP successfully! |                             |                                                                      |
+|  **5.2.2**  | ระบุ SSID ผิด (ไม่มีในระบบ)        | WIFI_EVENT_STA_DISCONNECTED  | TEST FAILED - Disconnected event captured.  |            0xC9             | คือWIFI_REASON_NO_AP_FOUND เกิดจากหา SSID ไม่เจอ เเล้ว STA ยกเลิกเอง |
+|  **5.2.3**  | ระบุ SSID ถูกต้อง แต่ Password ผิด | WIFI_EVENT_STA_DISCONNECTED  | TEST FAILED - Disconnected event captured.  |            0x02             | SSID ถูกต้อง แต่รหัสผ่านผิด → 4-way handshake ล้มเหลว                |
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
-| พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
-| :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| พารามิเตอร์เครือข่าย    | ค่าที่ได้รับจริงจาก DHCP |
+| :---------------------- | :----------------------- |
+| **SSID**                | hello_world              |
+| **BSSID (MAC Address)** | 96:44:8A:D9:7E:63        |
+| **Channel**             | 6                        |
+| **IP Address**          | 172.20.10.2              |
+| **Subnet Mask**         | 255.255.255.240          |
+| **Default Gateway**     | 172.20.10.1              |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
+   ```
+   เมื่อเรียก esp_wifi_connect() ไดรเวอร์ต้องสแกนก่อน เพื่อหา AP ที่ broadcast SSID ตรงกับที่ตั้งค่าไว้ ถ้าไม่มี AP ไหน broadcast SSID นั้นเลย ก็ไม่มีเป้าหมายให้ส่งเฟรม Authentication ต่อจึงหยุดตั้งแต่ชั้น Scan และไดรเวอร์แจ้ง disconnect ด้วย reason ไม่พบ AP
+   ```
 2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
+   ```
+   WPA2-PSK ใช้ Open System Authentication ในขั้น Auth ซึ่งเป็นเพียงการแลกเฟรมรับรู้กันเฉยๆ ไม่มีการตรวจสอบรหัสผ่านเลย จึงผ่านได้ ตามด้วย Association ที่เป็นการตกลง capability การเชื่อมต่อ ก็ยังไม่เกี่ยวกับ PSK จุดที่รหัสผ่านถูกใช้จริงคือ 4-Way Handshake ทั้งสองฝ่ายต้องคำนวณ PMK จาก PSK แล้วแลก Nonce สร้าง PTK และตรวจสอบ MIC ถ้ารหัสผ่านผิด PMK/PTK จะไม่ตรงกัน MIC ตรวจไม่ผ่าน handshake ล้มเหลว ทำให้ reason 204 หรือ 15 ตามทฤษฎี เเต่ในทางปฏิบัติ log ที่ได้จริงมักเป็น reason 2 AUTH_EXPIRE เพราะขึ้นกับพฤติกรรมของ AP ว่า active-reject หรือ silent-timeout
+   ```
 3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
+   ```
+   WIFI_EVENT_STA_CONNECTED เกิดก่อนอยู่ใน Layer 2  Association + 4-Way Handshake เสร็จสมบูรณ์ มีMAC แล้ว แต่ยังไม่มี IP เเล้วตามด้วยIP_EVENT_STA_GOT_IP อยู่ Layer 3 DHCP Client ขอและได้รับ IP Netmask Gateway จาก DHCP Server แล้ว
+   ```
 4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+   ```
+   reason ทำให้ระบบ IoT ออกแบบ recovery strategy แบบ context-aware แทนที่จะ retry เหมือนกันทุกกรณี
+	- NO_AP_FOUND 201 ปัญหา config  SSID ผิด ไม่ควร retry ถี่ ควร backoff นานหรือแจ้งเตือนตรวจ config
+	- AUTH_FAIL หรือ 4WAY_HANDSHAKE_TIMEOUT ปัญหา รหัสผ่านผิด หยุด retry ด้วยรหัสเดิม เข้าโหมด provisioning ใหม่ให้ผู้ใช้กรอกรหัสผ่าน
+	- BEACON_TIMEOUT สัญญาณอ่อน เหมาะกับ exponential backoff เพราะมีโอกาสเชื่อมกลับได้เอง
+   ```

@@ -57,4 +57,7 @@ sequenceDiagram
 ## 4. คำถามทบทวนความเข้าใจ (Checkpoints)
 
 1. ทำไมในเครือข่าย WPA2-PSK ขั้นตอน Auth Phase นี้ถึงผ่านได้แม้เราจะพิมพ์รหัสผ่านผิด?
-2. หาก Router มีการเปิดใช้งาน **MAC Address Filtering** (อนุญาตเฉพาะอุปกรณ์ที่ลงทะเบียน MAC ไว้) ESP32 จะล้มเหลวที่ขั้นตอนใด และได้ Reason Code อะไร?
+	ในมาตรฐาน WPA2ใช้ Open System ทำแค่ทักทายและสร้างกรอบการสื่อสารระดับ Link Layer  AP จึงตอบ Success โดยยังไม่มีการตรวจสอบตัวตนด้วยรหัสผ่าน
+2. หาก Router มีการเปิดใช้งาน **MAC Address Filtering** (อนุญาตเฉพาะอุปกรณ์ที่ลงทะเบียน MAC ไว้) ESP32 จะล้มเหลวที่ขั้นตอนใด และได้ Reason Code อะไร?
+	- ล้มเหลวใน เฟสย่อยที่ 2 Auth Phase 
+	- Reason Code เกิด Event WIFI_EVENT_STA_DISCONNECTED แจ้ง Disconnect Reason เป็น WIFI_REASON_AUTH_FAIL (Value 1)
