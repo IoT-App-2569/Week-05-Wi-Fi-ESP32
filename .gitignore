@@ -2,8 +2,11 @@
 
 # ESP-IDF
 build/
+sdkconfig
 sdkconfig.old
 dependencies.lock
+managed_components/
+.ninja_*
 
 # Python
 __pycache__/
