@@ -45,6 +45,7 @@
 	- AUTH_FAIL หรือ 4WAY_HANDSHAKE_TIMEOUT ปัญหา รหัสผ่านผิด หยุด retry ด้วยรหัสเดิม เข้าโหมด provisioning ใหม่ให้ผู้ใช้กรอกรหัสผ่าน
 	- BEACON_TIMEOUT สัญญาณอ่อน เหมาะกับ exponential backoff เพราะมีโอกาสเชื่อมกลับได้เอง
    ```
+
 ## Log
 
 ```
