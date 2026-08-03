@@ -1,1 +1,26 @@
 .obsidian/**
+
+# ESP-IDF
+build/
+sdkconfig.old
+dependencies.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
