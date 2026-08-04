@@ -368,26 +368,34 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.2.1** | SSID และ Password ถูกต้อง | | | | |
-| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | | | | |
-| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | | | | |
+| **5.2.1** | SSID และ Password ถูกต้อง |IP_EVENT_STA_GOT_IP |Passed |- |เชื่อมต่อ Wi-Fi สำเร็จ และได้รับ IP จาก DHCP |
+| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) |WIFI_EVENT_STA_DISCONNECTED |Failed 201 / 0xC9 |WIFI_REASON_NO_AP_FOUND ไม่พบ Access Point ที่มี SSID นี้ |
+| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด |WIFI_EVENT_STA_DISCONNECTED |Failed |201 / 0xC9* |ไม่สามารถค้นหา AP ได้ (*ควรเป็น 15 หรือ 204 หากเข้าสู่ขั้นตอน Handshake) |
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
 | พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **SSID** |wunsen |
+| **BSSID (MAC Address)** |ดูจาก WIFI_EVENT_STA_CONNECTED |
+| **Channel** |ดูจาก WIFI_EVENT_STA_CONNECTED |
+| **IP Address** |172.20.10.4 |
+| **Subnet Mask** |255.255.255.240 |
+| **Default Gateway** |172.20.10.1 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
+คำตอบ: เมื่อ ESP32 เริ่มเชื่อมต่อ Wi-Fi จะทำการ Scan หา Access Point ที่มี SSID ตามที่กำหนด หากไม่พบเครือข่ายดังกล่าว จะไม่สามารถเข้าสู่ขั้นตอน Authentication และ Association ได้ จึงเกิด Event WIFI_EVENT_STA_DISCONNECTED พร้อม Reason Code 201 (WIFI_REASON_NO_AP_FOUND)
+
 2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
+คำตอบ: เนื่องจาก SSID ถูกต้อง ทำให้ ESP32 สามารถค้นหา Access Point และเริ่ม Authentication กับ Association ได้ แต่เมื่อเข้าสู่ขั้นตอน 4-Way Handshake ระบบจะตรวจสอบรหัสผ่านเพื่อสร้าง Key สำหรับเข้ารหัส หาก Password ไม่ถูกต้องจึงไม่สามารถสร้าง Key ได้ ทำให้เกิด Timeout เช่น Reason Code 15 หรือ 204
+
 3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
+คำตอบ: WIFI_EVENT_STA_CONNECTED จะเกิดก่อน เป็นการยืนยันว่า ESP32 เชื่อมต่อกับ Access Point สำเร็จในระดับ Wi-Fi Layer (Layer 2)
+หลังจากนั้น ESP32 จะขอหมายเลข IP จาก DHCP Server และเกิด IP_EVENT_STA_GOT_IP ซึ่งเป็นการทำงานในระดับ Network Layer (Layer 3)
+
 4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+คำตอบ: ตัวแปร reason ใช้ระบุสาเหตุที่ทำให้การเชื่อมต่อ Wi-Fi ล้มเหลว เช่น Password ผิด, ไม่พบ AP หรือสัญญาณหลุด ช่วยให้นักพัฒนาวิเคราะห์ปัญหาและออกแบบระบบ Auto-Reconnection ให้เหมาะสม เช่น หาก Password ผิดอาจแจ้งเตือนผู้ใช้ แต่หากสัญญาณหลุดสามารถลองเชื่อมต่อใหม่อัตโนมัติได้

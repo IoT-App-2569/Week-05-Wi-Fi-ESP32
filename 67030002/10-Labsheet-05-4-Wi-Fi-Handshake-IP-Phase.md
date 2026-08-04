@@ -330,22 +330,43 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| **5.4.1** | Password ถูกต้อง (`wunsen / wunzazasen`) | เกิด | เกิด | **Passed** - 4-Way Handshake และ DHCP IP Assignment สำเร็จ | ไม่มี |
+| **5.4.2** | Password ผิด (`WRONG_PASSWORD_1234`) | เกิด (ชั่วคราว) | ไม่เกิด | **Failed** - การเชื่อมต่อล้มเหลวในขั้นตอน Handshake / Authentication | Decimal: 2 / Hex: 0x02 (`WIFI_REASON_AUTH_EXPIRE`) |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
 | :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **IP Address** | `172.20.10.4` |
+| **Subnet Mask** | `255.255.255.240` |
+| **Default Gateway** | `172.20.10.1` |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
-1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
-2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
-3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
-4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+### 1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+
+กระบวนการ 4-Way Handshake ของ WPA2 ไม่ได้ส่ง Password จริงผ่านคลื่นวิทยุ แต่ใช้การสร้างและตรวจสอบคีย์เข้ารหัส โดยนำ Password ไปสร้างเป็น **PMK (Pairwise Master Key)** จากนั้นใช้ค่า Random Number เช่น ANonce และ SNonce เพื่อสร้าง **PTK (Pairwise Transient Key)**
+
+หลังจากนั้นระบบจะตรวจสอบความถูกต้องผ่านค่า **MIC (Message Integrity Code)** ทำให้สามารถยืนยันได้ว่า Client มี Password ที่ถูกต้อง โดยไม่ต้องส่ง Password จริงออกไปในเครือข่าย
+
+---
+
+### 2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+
+**PMK (Pairwise Master Key)** เป็นคีย์หลักที่สร้างจาก Wi-Fi Password (Pre-Shared Key) และ SSID ทำหน้าที่เป็นพื้นฐานสำหรับการสร้างคีย์เข้ารหัส
+
+**PTK (Pairwise Transient Key)** เป็นคีย์ชั่วคราวที่ถูกสร้างขึ้นระหว่างกระบวนการ 4-Way Handshake โดยใช้ PMK ร่วมกับค่า ANonce, SNonce และ MAC Address ของ Access Point กับ Client
+
+ดังนั้น PMK จะทำหน้าที่เป็นต้นทางในการสร้าง PTK และ PTK จะถูกนำไปใช้ในการเข้ารหัสข้อมูลที่รับส่งระหว่าง ESP32 และ Access Point
+
+---
+
+### 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
+
+เนื่องจาก Event `WIFI_EVENT_STA_CONNECTED` แสดงถึงการเชื่อมต่อสำเร็จในระดับ **Link Layer Phase 3 (Authentication และ Association)** เท่านั้น
+
+ในขั้นตอนนี้ ESP32 สามารถเชื่อมโยงกับ Access Point ได้ แต่ยังไม่ได้ตรวจสอบ Password จริง
+เมื่อเข้าสู่ Phase 4 (4-Way Handshake) ระบบจะตรวจสอบค่า MIC จาก EAPOL-Key Frame หาก Password ไม่ถูกต้อง ค่า MIC จะไม่ตรงกัน ทำให้เกิด `WIFI_EVENT_STA_DISCONNECTED`
+จากผลการทดลองพบลำดับเหตุการณ์ดังนี้

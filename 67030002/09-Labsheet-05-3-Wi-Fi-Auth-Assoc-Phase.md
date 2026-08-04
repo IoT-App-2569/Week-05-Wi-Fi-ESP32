@@ -320,24 +320,34 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event ที่ได้รับ | ผลการผูกสัมพันธ์ Link Layer | ค่า Association ID (AID) ที่ได้ | Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง | | | | |
-| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง | | | | |
+| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง (`Snowfake`) | `WIFI_EVENT_STA_CONNECTED` | ✅ Link Layer Connected สำเร็จ (Authentication และ Association สำเร็จ) | 49910 | - |
+| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง (`NON_EXISTENT_AP_9999`) | `WIFI_EVENT_STA_DISCONNECTED` | ❌ ไม่สามารถเข้าสู่ขั้นตอน Authentication และ Association ได้ เนื่องจากไม่พบ Access Point | - | 201 / 0xC9 (`WIFI_REASON_NO_AP_FOUND`) |
 
-### 6.2 บันทึกข้อมูล Link Layer จาก Event `WIFI_EVENT_STA_CONNECTED` (ข้อ 5.3.1)
+---
+
+## 6.2 บันทึกข้อมูล Link Layer จาก Event `WIFI_EVENT_STA_CONNECTED` (ข้อ 5.3.1)
 
 | พารามิเตอร์ Link Layer | ค่าที่อ่านได้จริงจาก Forensic Log |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **Auth Mode Enum** | |
-| **Association ID (AID)** | |
+| **SSID** | Snowfake |
+| **BSSID (MAC Address)** | A2:FA:D0:08:08:0C |
+| **Channel** | 6 |
+| **Auth Mode Enum** | 3 (WPA2-PSK) |
+| **Association ID (AID)** | 49910 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
-1. **Association ID (AID)** คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?
-2. เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event `WIFI_EVENT_STA_CONNECTED` ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?
-3. หาก Router มีการตั้งค่า **MAC Address Filtering** (อนุญาตเฉพาะ MAC ที่ลงทะเบียน) ESP32 จะล้มเหลวในเฟสใด และจะส่ง Disconnect Reason Code ใดออกมา?
-4. สรุปความแตกต่างสำคัญระหว่างจุดสิ้นสุดของ **Phase 3 (Link-Layer Connected)** กับจุดสิ้นสุดของ **Phase 5 (IP Address Assigned)**
+### 1. Association ID (AID) คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?
+
+**คำตอบ**
+
+Association ID (AID) คือ หมายเลขที่ Access Point กำหนดให้กับ Station (ESP32) หลังจากกระบวนการ Association สำเร็จ เพื่อใช้ระบุอุปกรณ์ที่เชื่อมต่ออยู่ภายในเครือข่าย Wi-Fi
+
+ใน Phase 3 (Association Phase) ค่า AID ใช้สำหรับการจัดการการเชื่อมต่อระหว่าง Access Point และ Client เช่น การส่งข้อมูล การควบคุมสถานีที่เชื่อมต่อ และการจัดการทรัพยากรของ AP
+
+ค่า AID ถูกส่งกลับมาใน Event `WIFI_EVENT_STA_CONNECTED` ผ่านโครงสร้างข้อมูล
+
+```c
+wifi_event_sta_connected_t

@@ -104,6 +104,13 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 
 ## 4. คำถามทบทวนความเข้าใจ (Checkpoints)
 
-1. เหตุใดการเกิด Event `WIFI_EVENT_STA_CONNECTED` จึงยัง**ไม่เพียงพอ**ที่จะเริ่มส่งข้อมูลไปยังเว็บเซิร์ฟเวอร์ภายนอกได้?
-2. หากพิมพ์รหัสผ่าน Wi-Fi ผิด กระบวนการเชื่อมต่อจะหลุดและแจ้ง Error ในเฟสใด?
-3. ระบบ Event Loop มีข้อดีอย่างไรเมื่อเทียบกับการเขียนโค้ดแบบวนลูปเช็กสถานะ (Polling loop)?
+### 1. เหตุใดการเกิด Event `WIFI_EVENT_STA_CONNECTED` จึงยังไม่เพียงพอที่จะเริ่มส่งข้อมูลไปยังเว็บเซิร์ฟเวอร์ภายนอกได้?
+
+เนื่องจาก `WIFI_EVENT_STA_CONNECTED` หมายถึง ESP32 เชื่อมต่อกับ Access Point สำเร็จในระดับ **Link Layer (Phase 3: Association)** เท่านั้น
+
+ในขั้นตอนนี้ ESP32 สามารถสื่อสารกับ AP ได้ในระดับ Wi-Fi แต่ยังไม่มีหมายเลข IP Address สำหรับการสื่อสารบนเครือข่าย TCP/IP
+
+ESP32 จำเป็นต้องผ่านขั้นตอน **Phase 4: Four-Way Handshake** เพื่อยืนยันคีย์ความปลอดภัย และผ่าน **Phase 5: DHCP IP Assignment** เพื่อรับค่า IP Address, Subnet Mask และ Gateway ก่อน
+
+ดังนั้น Event ที่แสดงว่าพร้อมใช้งานบน Network Layer คือ
+

@@ -9,17 +9,17 @@
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
-
+ 
 static const char *TAG = "LAB_HANDSHAKE_IP";
-
+ 
 static EventGroupHandle_t s_wifi_event_group;
-
+ 
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
-
-#define TARGET_WIFI_SSID   "S24 Ultra Koson"
-#define TARGET_WIFI_PASS   "1234567890"
-
+ 
+#define TARGET_WIFI_SSID   "MY_SSID"
+#define TARGET_WIFI_PASS   "MY_PASSWORD"
+ 
 static const char *get_disconnect_reason_info(uint8_t reason) {
   switch (reason) {
   case WIFI_REASON_UNSPECIFIED:
@@ -28,8 +28,8 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
     return "WIFI_REASON_AUTH_EXPIRE (2)";
   case WIFI_REASON_AUTH_FAIL:
     return "WIFI_REASON_AUTH_FAIL (1/202)";
-  case WIFI_REASON_ASSOC_EXPIRE:
-    return "WIFI_REASON_ASSOC_EXPIRE (4)";
+  case WIFI_REASON_ASSOC_LEAVE:
+    return "WIFI_REASON_ASSOC_LEAVE (8)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (3/203)";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
@@ -44,7 +44,7 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
     return "OTHER_DISCONNECT_REASON";
   }
 }
-
+ 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data) {
   if (event_base == WIFI_EVENT) {
@@ -56,7 +56,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
       ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_connect() returned %s (0x%x)",
                esp_err_to_name(err_conn), err_conn);
       break;
-
+ 
     case WIFI_EVENT_STA_CONNECTED: {
       wifi_event_sta_connected_t *event =
           (wifi_event_sta_connected_t *)event_data;
@@ -73,7 +73,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
       ESP_LOGI(TAG, "=======================================================");
       break;
     }
-
+ 
     case WIFI_EVENT_STA_DISCONNECTED: {
       wifi_event_sta_disconnected_t *event =
           (wifi_event_sta_disconnected_t *)event_data;
@@ -88,7 +88,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
       xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
       break;
     }
-
+ 
     default:
       ESP_LOGI(TAG, "[EVENT FORENSIC]: WIFI_EVENT ID %ld received", event_id);
       break;
@@ -107,7 +107,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
     }
   }
 }
-
+ 
 static void test_handshake_ip_phase(const char *test_title, const char *ssid,
                                      const char *password) {
   ESP_LOGI(TAG, "\n");
@@ -116,9 +116,7 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "------------------------------------------------------------------");
   ESP_LOGI(TAG, "  Target SSID    : \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
-
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
+ 
   wifi_config_t wifi_config = {
       .sta = {
           .threshold.authmode = WIFI_AUTH_WPA2_PSK,
@@ -127,24 +125,29 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
   strncpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
   strncpy((char *)wifi_config.sta.password, password,
           sizeof(wifi_config.sta.password));
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
-
+ 
+  // NOTE (แก้ไข): ย้าย Clear event bits มาไว้ตรงนี้ หลังจาก esp_wifi_stop()
+  // เพราะ esp_wifi_stop() เองก็ยิง WIFI_EVENT_STA_DISCONNECTED (Reason 8, ASSOC_LEAVE)
+  // ถ้าเคลียร์ก่อน stop() ค่า event เก่าที่ค้างจาก AP รอบก่อนจะไปติด WIFI_FAIL_BIT
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
   esp_err_t err_cfg = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
   ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_set_config() returned %s (0x%x)",
            esp_err_to_name(err_cfg), err_cfg);
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_start()");
   esp_err_t err_start = esp_wifi_start();
   ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_start() returned %s (0x%x)",
            esp_err_to_name(err_start), err_start);
-
+ 
   EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
                                          WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
                                          pdFALSE, pdFALSE, pdMS_TO_TICKS(10000));
-
+ 
   if (bits & WIFI_CONNECTED_BIT) {
     ESP_LOGI(TAG, "[RESULT]: TEST PASSED - 4-Way Handshake & DHCP IP Assignment Successful!");
   } else if (bits & WIFI_FAIL_BIT) {
@@ -153,10 +156,10 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
     ESP_LOGE(TAG, "[RESULT]: TEST TIMEOUT - Response timeout from AP/DHCP Server.");
   }
 }
-
+ 
 void app_main(void) {
   s_wifi_event_group = xEventGroupCreate();
-
+ 
   // 1. Initialize NVS Flash
   ESP_LOGI(TAG, "[FORENSIC]: Call nvs_flash_init()");
   esp_err_t ret = nvs_flash_init();
@@ -171,23 +174,23 @@ void app_main(void) {
              esp_err_to_name(ret), ret);
   }
   ESP_ERROR_CHECK(ret);
-
+ 
   // 2. Initialize Network Interface and Event Loop
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_netif_init()");
   ESP_ERROR_CHECK(esp_netif_init());
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_event_loop_create_default()");
   ESP_ERROR_CHECK(esp_event_loop_create_default());
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_netif_create_default_wifi_sta()");
   esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
   ESP_LOGI(TAG, "[FORENSIC]: esp_netif_create_default_wifi_sta() returned %p", sta_netif);
-
+ 
   // 3. Initialize Wi-Fi Driver
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_init(&cfg)");
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
+ 
   // 4. Register Event Handlers (WIFI_EVENT & IP_EVENT)
   esp_event_handler_instance_t instance_any_id;
   esp_event_handler_instance_t instance_got_ip;
@@ -195,33 +198,33 @@ void app_main(void) {
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
       WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL,
       &instance_any_id));
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_event_handler_instance_register(IP_EVENT)");
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
       IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL,
       &instance_got_ip));
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)");
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-
+ 
   ESP_LOGI(TAG, "==================================================================");
   ESP_LOGI(TAG, "  Lab 5.4: 4-Way Handshake & IP Assignment Phase (ESP-IDF Forensic)");
   ESP_LOGI(TAG, "==================================================================");
-
+ 
   // ------------------------------------------------------------------
   // 5.4.1 Successful 4-Way Handshake & DHCP IP Assignment Case
   // ------------------------------------------------------------------
   test_handshake_ip_phase("Experiment 5.4.1: Handshake & IP Test - Correct Password",
                           TARGET_WIFI_SSID, TARGET_WIFI_PASS);
-
+ 
   vTaskDelay(pdMS_TO_TICKS(2000));
-
+ 
   // ------------------------------------------------------------------
   // 5.4.2 Simulated Handshake Failure Case: Wrong Password
   // ------------------------------------------------------------------
   test_handshake_ip_phase("Experiment 5.4.2: Handshake Test - Incorrect Password",
                           TARGET_WIFI_SSID, "WRONG_PASSWORD_1234");
-
+ 
   ESP_LOGI(TAG, "==================================================================");
   ESP_LOGI(TAG, "  [Phase 4 & Phase 5 Completed: Wi-Fi Handshake & IP Lab Finished]");
   ESP_LOGI(TAG, "==================================================================");

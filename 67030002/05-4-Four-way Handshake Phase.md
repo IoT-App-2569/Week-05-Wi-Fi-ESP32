@@ -95,6 +95,35 @@ sequenceDiagram
 
 ## 5. คำถามทบทวนความเข้าใจ (Checkpoints)
 
-1. ในกระบวนการ 4-Way Handshake เหตุใดจึงไม่มีการส่งรหัสผ่าน (Password) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
-2. เหตุใดการพิมพ์รหัสผ่าน Wi-Fi ผิดใน ESP32 จึงมักหลุดที่ขั้นตอน **2/4 EAPOL** หรือ **3/4 EAPOL** ไม่ใช่ตั้งแต่เฟส 1 หรือ 2?
-3. ความแตกต่างสำคัญระหว่าง Event **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** คืออะไร?
+### 1. ในกระบวนการ 4-Way Handshake เหตุใดจึงไม่มีการส่งรหัสผ่าน (Password) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+
+**คำตอบ:**  
+เนื่องจากกระบวนการ 4-Way Handshake ของ WPA2/WPA3 ไม่ได้ส่งรหัสผ่าน (Pre-Shared Key: PSK) ผ่านคลื่นวิทยุโดยตรง แต่ใช้วิธีการพิสูจน์ความถูกต้องด้วยการคำนวณค่าทาง Cryptography
+
+โดย AP และ ESP32 จะใช้ Password เดียวกันในการสร้าง **PMK (Pairwise Master Key)** จากนั้นแลกเปลี่ยนค่า Nonce (ANonce และ SNonce) เพื่อคำนวณ **PTK (Pairwise Transient Key)** และใช้ค่า **MIC (Message Integrity Code)** ตรวจสอบว่าคีย์ที่คำนวณได้ตรงกันหรือไม่
+
+ดังนั้นผู้ดักฟังสามารถเห็น EAPOL-Key Frame ได้ แต่ไม่สามารถย้อนกลับหา Password ได้โดยตรง เนื่องจาก Password ไม่เคยถูกส่งออกไปในอากาศ
+
+---
+
+### 2. เหตุใดการพิมพ์รหัสผ่าน Wi-Fi ผิดใน ESP32 จึงมักหลุดที่ขั้นตอน **2/4 EAPOL** หรือ **3/4 EAPOL** ไม่ใช่ตั้งแต่เฟส 1 หรือ 2?
+
+**คำตอบ:**  
+เนื่องจากเฟส 1 (Scan Phase) และเฟส 2 (Authentication Phase) เป็นเพียงการค้นหา Access Point และการยืนยันตัวตนระดับ IEEE 802.11 Link Layer ซึ่งไม่ได้ตรวจสอบ Password จริง
+
+ในเครือข่าย WPA2-PSK ขั้นตอน Authentication ใช้รูปแบบ **Open System Authentication** ทำให้ ESP32 สามารถผ่านเฟสนี้ได้แม้ว่าจะใส่ Password ผิด
+
+การตรวจสอบ Password จริงจะเกิดขึ้นใน **Phase 4: Four-Way Handshake** โดยเฉพาะช่วง 2/4 หรือ 3/4 EAPOL เมื่อมีการตรวจสอบค่า MIC หากค่าไม่ตรงกัน AP และ ESP32 จะไม่สามารถสร้าง Encryption Key ได้ และจะเกิด Disconnect Event พร้อม Reason Code เช่น `WIFI_REASON_HANDSHAKE_TIMEOUT`
+
+---
+
+### 3. ความแตกต่างสำคัญระหว่าง Event **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** คืออะไร?
+
+**คำตอบ:**  
+
+| Event | ระดับการเชื่อมต่อ | ความหมาย |
+| :--- | :--- | :--- |
+| `WIFI_EVENT_STA_CONNECTED` | Link Layer (Layer 2) | ESP32 ผ่านขั้นตอน Authentication และ Association กับ AP สำเร็จแล้ว สามารถสื่อสารในระดับ MAC ได้ แต่ยังไม่มี IP Address |
+| `IP_EVENT_STA_GOT_IP` | Network Layer (Layer 3) | ESP32 ได้รับ IP Address จาก DHCP Server สำเร็จ พร้อมใช้งาน TCP/IP และสามารถสื่อสารกับเครือข่ายภายนอกได้ |
+
+ดังนั้น `WIFI_EVENT_STA_CONNECTED` หมายถึง **เชื่อมต่อ Wi-Fi สำเร็จในระดับลิงก์** ส่วน `IP_EVENT_STA_GOT_IP` หมายถึง **พร้อมใช้งานเครือข่ายจริงหลังได้รับหมายเลข IP**
