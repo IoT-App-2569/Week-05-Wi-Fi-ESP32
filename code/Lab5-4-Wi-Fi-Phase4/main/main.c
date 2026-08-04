@@ -33,6 +33,8 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
     return "WIFI_REASON_ASSOC_EXPIRE (4)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (3/203)";
+  case WIFI_REASON_ASSOC_TOOMANY:
+    return "WIFI_REASON_ASSOC_TOOMANY (5) [AP Max Clients Exceeded]";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
     return "WIFI_REASON_HANDSHAKE_TIMEOUT (15) [Phase 4: MIC mismatch / EAPOL timeout]";
   case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:

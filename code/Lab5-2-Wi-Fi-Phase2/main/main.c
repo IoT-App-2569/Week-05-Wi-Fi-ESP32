@@ -36,6 +36,8 @@ static const char *get_disconnect_reason_name(uint8_t reason) {
     return "WIFI_REASON_ASSOC_EXPIRE (4)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (203)";
+  case WIFI_REASON_ASSOC_TOOMANY:
+    return "WIFI_REASON_ASSOC_TOOMANY (5) [AP Max Clients Exceeded]";
   case WIFI_REASON_ASSOC_NOT_AUTHED:
     return "WIFI_REASON_NOT_AUTHED (6)";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
