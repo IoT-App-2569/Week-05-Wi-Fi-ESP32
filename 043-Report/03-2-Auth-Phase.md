@@ -54,7 +54,14 @@ sequenceDiagram
 
 ---
 
-## 4. คำถามทบทวนความเข้าใจ (Checkpoints)
+# 4. คำถามทบทวนความเข้าใจ (Checkpoints)
 
 1. ทำไมในเครือข่าย WPA2-PSK ขั้นตอน Auth Phase นี้ถึงผ่านได้แม้เราจะพิมพ์รหัสผ่านผิด?
+
+เพราะใน WPA2-PSK ขั้นตอน **802.11 Authentication** ที่ใช้จริงคือ **Open System Authentication** ซึ่งเป็นเพียงการแลกเปลี่ยน Authentication Frame แบบง่ายๆ ระหว่าง Client กับ AP เพื่อยืนยันว่าทั้งสองฝ่ายพร้อมสื่อสารกันในระดับ 802.11 เท่านั้น **ไม่มีการตรวจสอบรหัสผ่านหรือ Credential ใดๆ** ในขั้นตอนนี้เลย แทบทุก AP จะตอบรับ (Authentication Successful) เสมอไม่ว่าใครก็ตามที่ส่งคำขอมา การตรวจสอบว่ารหัสผ่านถูกต้องหรือไม่นั้นถูกเลื่อนไปทำในขั้นตอน **4-Way EAPOL Handshake** ซึ่งเป็นคนละเฟสกัน จึงเป็นเหตุผลที่ Auth Phase และ Association Phase ผ่านได้ตามปกติแม้พิมพ์รหัสผ่านผิด
+
 2. หาก Router มีการเปิดใช้งาน **MAC Address Filtering** (อนุญาตเฉพาะอุปกรณ์ที่ลงทะเบียน MAC ไว้) ESP32 จะล้มเหลวที่ขั้นตอนใด และได้ Reason Code อะไร?
+
+ESP32 จะล้มเหลวตั้งแต่ **Phase 2: Authentication** ซึ่งเป็นขั้นตอนแรกสุดที่ AP ต้องตรวจสอบตัวตนของอุปกรณ์ในระดับ Data Link Layer เนื่องจาก MAC Address Filtering เป็นกลไกที่ AP ใช้ตรวจสอบ **MAC Address ต้นทาง** ของ Client ก่อนอนุญาตให้เข้าสู่กระบวนการใดๆ ต่อไป หาก MAC Address ของ ESP32 ไม่อยู่ใน Whitelist ที่ Router กำหนดไว้ AP จะปฏิเสธคำขอ Authentication ทันที โดยไม่ผ่านไปถึงขั้นตอน Association หรือ 4-Way Handshake เลย
+
+ผลลัพธ์คือจะเกิด Event `WIFI_EVENT_STA_DISCONNECTED` พร้อม Reason Code ที่มักพบคือ **`WIFI_REASON_AUTH_FAIL` (Reason Code = 2)** หรือในบาง Router/Driver อาจรายงานเป็น **`WIFI_REASON_ASSOC_FAIL`** ขึ้นอยู่กับ Implementation ของแต่ละยี่ห้อ แต่โดยหลักการแล้วจะเป็น Reason Code ในกลุ่ม Authentication/Association Failure ไม่ใช่กลุ่มที่เกี่ยวข้องกับ 4-Way Handshake เนื่องจากอุปกรณ์ถูกปฏิเสธตั้งแต่ยังไม่ทันเข้าสู่ขั้นตอนแลกเปลี่ยนกุญแจเข้ารหัสเลย

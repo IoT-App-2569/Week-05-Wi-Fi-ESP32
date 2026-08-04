@@ -17,8 +17,8 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
-#define TARGET_WIFI_SSID   "S24 Ultra Koson"
-#define TARGET_WIFI_PASS   "1234567890"
+#define TARGET_WIFI_SSID   "Snowfake"
+#define TARGET_WIFI_PASS   "ohmmyk64"
 
 static const char *get_disconnect_reason_info(uint8_t reason) {
   switch (reason) {
@@ -28,8 +28,8 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
     return "WIFI_REASON_AUTH_EXPIRE (2)";
   case WIFI_REASON_AUTH_FAIL:
     return "WIFI_REASON_AUTH_FAIL (1/202)";
-  case WIFI_REASON_ASSOC_EXPIRE:
-    return "WIFI_REASON_ASSOC_EXPIRE (4)";
+  case WIFI_REASON_ASSOC_LEAVE:
+    return "WIFI_REASON_ASSOC_LEAVE (8)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (3/203)";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
@@ -117,8 +117,6 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "  Target SSID    : \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
   wifi_config_t wifi_config = {
       .sta = {
           .threshold.authmode = WIFI_AUTH_WPA2_PSK,
@@ -130,6 +128,11 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
+
+  // NOTE (แก้ไข): ย้าย Clear event bits มาไว้ตรงนี้ หลังจาก esp_wifi_stop()
+  // เพราะ esp_wifi_stop() เองก็ยิง WIFI_EVENT_STA_DISCONNECTED (Reason 8, ASSOC_LEAVE)
+  // ถ้าเคลียร์ก่อน stop() ค่า event เก่าที่ค้างจาก AP รอบก่อนจะไปติด WIFI_FAIL_BIT
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
   esp_err_t err_cfg = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);

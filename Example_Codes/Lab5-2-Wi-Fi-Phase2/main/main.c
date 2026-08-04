@@ -19,8 +19,8 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_FAIL_BIT BIT1
 
 // Configurable target Wi-Fi credentials for successful test
-#define EXAMPLE_ESP_WIFI_SSID "MY_SSID"
-#define EXAMPLE_ESP_WIFI_PASS "MY_PASSWORD"
+#define EXAMPLE_ESP_WIFI_SSID "Snowfake"
+#define EXAMPLE_ESP_WIFI_PASS "ohmmyk64"
 
 // Convert wifi_reason_code_t to readable string
 static const char *get_disconnect_reason_name(uint8_t reason) {
@@ -31,12 +31,12 @@ static const char *get_disconnect_reason_name(uint8_t reason) {
     return "WIFI_REASON_AUTH_EXPIRE (2)";
   case WIFI_REASON_AUTH_LEAVE:
     return "WIFI_REASON_AUTH_LEAVE (3)";
-  case WIFI_REASON_ASSOC_EXPIRE:
-    return "WIFI_REASON_ASSOC_EXPIRE (4)";
+  case WIFI_REASON_ASSOC_LEAVE:
+    return "WIFI_REASON_ASSOC_LEAVE (8)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (203)";
-  case WIFI_REASON_NOT_AUTHED:
-    return "WIFI_REASON_NOT_AUTHED (6)";
+  case WIFI_REASON_ASSOC_NOT_AUTHED:
+    return "WIFI_REASON_ASSOC_NOT_AUTHED (6)";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
     return "WIFI_REASON_HANDSHAKE_TIMEOUT (15)";
   case WIFI_REASON_NO_AP_FOUND:
@@ -130,9 +130,6 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "  Target SSID: \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
-  // Clear event bits
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
   wifi_config_t wifi_config = {
       .sta =
           {
@@ -145,6 +142,12 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
+
+  // NOTE (แก้ไข): ย้าย Clear event bits มาไว้ตรงนี้ หลังจาก esp_wifi_stop()
+  // เพราะ esp_wifi_stop() เองก็ยิง WIFI_EVENT_STA_DISCONNECTED (Reason 8, ASSOC_LEAVE)
+  // ถ้าเคลียร์ก่อน stop() ค่า event เก่าที่ค้างจาก AP รอบก่อนจะไปติด WIFI_FAIL_BIT
+  // ทำให้ xEventGroupWaitBits() ด้านล่างจบทันทีโดยไม่รอผลจริงของการเชื่อมต่อครั้งใหม่
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   ESP_LOGI(TAG,
            "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");

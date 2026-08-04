@@ -368,26 +368,41 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.2.1** | SSID และ Password ถูกต้อง | | | | |
-| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | | | | |
-| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | | | | |
+| **5.2.1** | SSID และ Password ถูกต้อง | WIFI_EVENT_STA_CONNECTED → IP_EVENT_STA_GOT_IP | Passed | – | เชื่อมต่อสำเร็จ ได้รับ IP จาก DHCP Server |
+| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | WIFI_EVENT_STA_DISCONNECTED | Failed | 201 / 0xC9 | WIFI_REASON_NO_AP_FOUND — สแกนครบทุก channel (1-13) แล้วไม่พบ SSID เป้าหมายเลย |
+| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | WIFI_EVENT_STA_DISCONNECTED | Failed | 2 / 0x02 | WIFI_REASON_AUTH_EXPIRE — หลุดหลังผ่าน auth→assoc→run สำเร็จแล้ว ล้มเหลวช่วง key handshake |
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
 | พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **SSID** | Snowfake |
+| **BSSID (MAC Address)** | A2:FA:D0:08:08:0C |
+| **Channel** | 6 |
+| **IP Address** | 172.20.10.2 |
+| **Subnet Mask** | 255.255.255.240 |
+| **Default Gateway** | 172.20.10.1 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
-1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
-2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
-3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
-4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?**
+
+เพราะกระบวนการ `esp_wifi_connect()` เริ่มต้นด้วย **Scan Phase** เสมอ เพื่อค้นหา AP ที่มี SSID ตรงกับที่ config ไว้ก่อนเป็นอันดับแรก เมื่อสแกนครบทุก channel (1-13) แล้วไม่พบ SSID เป้าหมายเลย ไดรเวอร์จะไม่มี AP ให้เดินหน้าต่อไปยังเฟส Authentication/Association ได้เลย จึงจบกระบวนการเชื่อมต่อตั้งแต่ชั้นแรกสุด และยิง Event `WIFI_EVENT_STA_DISCONNECTED` พร้อม Reason `201` ออกมาทันที จาก log จริงที่ได้ยังสังเกตได้ว่าใช้เวลาประมาณ 2.4 วินาที (จาก `esp_wifi_connect()` ที่ 4263ms จนถึง Disconnect event ที่ 6673ms) ซึ่งสอดคล้องกับระยะเวลาสแกนครบทุก channel ที่เคยวัดได้ใน Lab 5.1
+
+2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake?**
+
+เพราะเครือข่าย WPA2-PSK ใช้ **Open System Authentication** ในเฟส Auth ซึ่งเป็นการยินยอมผ่านระดับ Link Layer โดยไม่มีการตรวจสอบรหัสผ่านใด ๆ เลย ส่วนเฟส Association ก็เพียงตกลงคุณสมบัติเครือข่าย เช่น data rate และ capability เท่านั้น ไม่เกี่ยวข้องกับรหัสผ่านเช่นกัน รหัสผ่านจะถูกนำไปคำนวณเป็น PMK แล้วนำไปตรวจสอบจริงผ่านค่า MIC ในขั้นตอน 4-Way Handshake เท่านั้น จาก log จริงเห็นได้ชัดว่า state เดินผ่าน `auth -> assoc -> run` มาได้ตามปกติ แล้วจึงหลุดที่ `run -> init` ซึ่งคือช่วง handshake สอดคล้องกับทฤษฎี เพียงแต่ Reason Code ที่ได้จริงคือ `2` (`AUTH_EXPIRE`) แทนที่จะเป็น `15`/`204` ตามที่ใบงานระบุไว้ เนื่องจาก ESP-IDF เวอร์ชัน v6.0.2 ที่ใช้ในการทดลองนี้เปลี่ยนพฤติกรรมการรายงาน reason code สำหรับกรณี handshake ล้มเหลวบางแบบไปใช้ค่านี้แทน
+
+3. ลำดับการเกิด Event ระหว่าง `WIFI_EVENT_STA_CONNECTED` กับ `IP_EVENT_STA_GOT_IP` Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?**
+
+`WIFI_EVENT_STA_CONNECTED` เกิดก่อนเสมอ (จาก log จริงเกิดที่ 1003 ms ส่วน `IP_EVENT_STA_GOT_IP` เกิดที่ 2023 ms ห่างกันประมาณ 1 วินาที) เพราะ `WIFI_EVENT_STA_CONNECTED` แสดงถึงความสำเร็จในระดับ **Link Layer (OSI Layer 2)** เท่านั้น คือ Auth, Association และ 4-Way Handshake สำเร็จ พร้อมเข้ารหัสข้อมูลได้แล้ว แต่ยังไม่มีหมายเลข IP ใช้งาน ส่วน `IP_EVENT_STA_GOT_IP` แสดงถึงความสำเร็จใน **Network Layer (OSI Layer 3)** ซึ่งต้องอาศัยกระบวนการ DHCP (Discover → Offer → Request → ACK) เพิ่มเติมหลังจาก Link Layer เชื่อมต่อแล้วเท่านั้น จึงเกิดทีหลังเสมอ
+
+4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?**
+
+ค่า `reason` ทำให้แอปพลิเคชันแยกแยะสาเหตุการหลุดและเลือกกลยุทธ์ reconnect ที่เหมาะสมได้ แทนที่จะ retry แบบเดายิงมั่ว ๆ ทุกครั้ง เช่น จากผลจริงที่ได้ในแล็บนี้:
+- Reason `2` (`AUTH_EXPIRE`, มักเกิดจากรหัสผ่านผิด) → ควร**หยุด retry ทันทีและแจ้งเตือนผู้ใช้ให้แก้รหัสผ่าน** เพราะ retry ไปก็ไม่มีทางสำเร็จ สิ้นเปลืองพลังงานและแบตเตอรี่โดยเปล่าประโยชน์
+- Reason `201` (`NO_AP_FOUND`, อาจเป็น AP ปิดชั่วคราวหรือสัญญาณอ่อน) → สามารถตั้ง **retry แบบ exponential backoff** เพื่อลองใหม่เรื่อย ๆ ได้อย่างสมเหตุสมผล เพราะสถานการณ์อาจเปลี่ยนแปลงได้ในอนาคต
+
+การแยกแยะแบบนี้ช่วยประหยัดพลังงานในอุปกรณ์ IoT ที่ใช้แบตเตอรี่ ลด false-alarm รบกวนผู้ใช้โดยไม่จำเป็น และทำให้ระบบตอบสนองต่อปัญหาที่แท้จริงได้ตรงจุดมากขึ้น

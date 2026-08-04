@@ -105,5 +105,16 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 ## 4. คำถามทบทวนความเข้าใจ (Checkpoints)
 
 1. เหตุใดการเกิด Event `WIFI_EVENT_STA_CONNECTED` จึงยัง**ไม่เพียงพอ**ที่จะเริ่มส่งข้อมูลไปยังเว็บเซิร์ฟเวอร์ภายนอกได้?
+
+เพราะ Event นี้บ่งบอกเพียงว่าอุปกรณ์เชื่อมต่อสำเร็จใน **Layer 2 (Data Link Layer)** เท่านั้น คือผ่านขั้นตอน Authentication, Association และ 4-Way Handshake เรียบร้อยแล้ว ทำให้ส่ง/รับเฟรมข้อมูลที่เข้ารหัสกับ AP ได้ แต่อุปกรณ์ยัง**ไม่มี IP Address** ที่จะใช้สื่อสารระดับ **Layer 3 (Network Layer)** เลย จึงยังสร้าง Socket, ทำ DNS Resolution หรือส่ง Packet ไปยังเว็บเซิร์ฟเวอร์ภายนอกไม่ได้ ต้องรอจนกว่าจะได้รับ Event `IP_EVENT_STA_GOT_IP` ซึ่งยืนยันว่า DHCP จัดสรร IP Address, Subnet Mask และ Default Gateway ให้แล้ว การสื่อสารระดับ Application จึงจะเริ่มต้นได้จริง
+
 2. หากพิมพ์รหัสผ่าน Wi-Fi ผิด กระบวนการเชื่อมต่อจะหลุดและแจ้ง Error ในเฟสใด?
+
+จะหลุดใน **Phase 4: 4-Way EAPOL Key Exchange (Handshake)** เนื่องจากขั้นตอน Authentication และ Association (Phase 2-3) ไม่ตรวจสอบรหัสผ่าน จึงผ่านไปได้ตามปกติ แต่เมื่อเข้าสู่ 4-Way Handshake ค่า PMK ที่คำนวณจากรหัสผ่านผิดจะทำให้ PTK และ MIC ที่ ESP32 คำนวณไม่ตรงกับที่ AP คำนวณ AP จึงปฏิเสธและสั่งตัดการเชื่อมต่อ ทำให้เกิด `WIFI_EVENT_STA_DISCONNECTED` พร้อม Reason Code ที่เกี่ยวข้องกับ Auth/Handshake ล้มเหลว (เช่น `WIFI_REASON_AUTH_EXPIRE`) โดยจะไม่เกิด Event `WIFI_EVENT_STA_CONNECTED` เลยในกรณีนี้
+
 3. ระบบ Event Loop มีข้อดีอย่างไรเมื่อเทียบกับการเขียนโค้ดแบบวนลูปเช็กสถานะ (Polling loop)?
+
+- **ประหยัดทรัพยากร CPU**: Event Loop จะ block รอจนกว่าจะมี event เกิดขึ้นจริง ต่างจาก Polling ที่ต้องวนลูปเช็กสถานะซ้ำๆ ตลอดเวลา กิน CPU cycle โดยไม่จำเป็น (busy-waiting)
+- **ตอบสนองได้ทันที (Responsive)**: เมื่อมี Event เกิดขึ้น (connect สำเร็จ, ได้ IP, disconnect) callback function ถูกเรียกทันที ไม่ต้องรอรอบถัดไปของ loop เหมือน Polling ที่อาจมี delay ตาม interval ที่ตั้งไว้
+- **โครงสร้างโค้ดสะอาดและขยายง่าย (Decoupled/Scalable)**: แยก Logic การจัดการแต่ละ Event ออกจากกันชัดเจน (handler สำหรับ WIFI_EVENT กับ IP_EVENT แยกกัน) เพิ่ม/ลบ handler ได้โดยไม่กระทบส่วนอื่น ต่างจาก Polling ที่มักต้องเขียน if-else ซ้อนกันจำนวนมากในลูปเดียว
+- **ประหยัดพลังงาน (Power Efficient)**: สำคัญสำหรับอุปกรณ์ Embedded/IoT ที่ใช้แบตเตอรี่ เพราะ CPU เข้าสู่โหมดประหยัดพลังงาน (idle/sleep) ได้เมื่อไม่มี Event ค้างอยู่ ต่างจาก Polling ที่ CPU ต้องทำงานตลอดเวลาแม้ไม่มีอะไรเปลี่ยนแปลง

@@ -330,22 +330,36 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| **5.4.1** | Password ถูกต้อง | เกิด | เกิด | **PASSED** | – ไม่มี disconnect |
+| **5.4.2** | Password ผิด | ไม่เกิด | ไม่เกิด | **FAILED** | 2 (0x02) — `WIFI_REASON_AUTH_EXPIRE` (มี reason 8 = `WIFI_REASON_ASSOC_LEAVE` เกิดก่อนหน้า จากการสั่ง disconnect เพื่อเปลี่ยน config) |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
 | :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **IP Address** | 172.20.10.2 |
+| **Subnet Mask** | 255.255.255.240 |
+| **Default Gateway** | 172.20.10.1 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+
+เพราะทั้ง Client และ AP ต่างคำนวณ **PMK** จาก Passphrase + SSID ด้วยตัวเองแยกกัน (ผ่าน PBKDF2) โดยไม่มีการส่ง PMK หรือ Passphrase ผ่านอากาศเลย จากนั้นทั้งสองฝ่ายแลกเปลี่ยนเฉพาะค่า Nonce แบบสุ่ม (ANonce, SNonce) เพื่อคำนวณ PTK ร่วมกัน แล้วใช้ PTK สร้าง MIC แนบไปกับเฟรมที่ 2 และ 3 ถ้า MIC ตรงกันแสดงว่ามี PMK (รหัสผ่าน) ตรงกันจริง โดยไม่ต้องเปิดเผยรหัสผ่านเลยแม้แต่ไบต์เดียว
+
 2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+
+- **PMK**: กุญแจแม่ระดับบนสุด ได้จาก Passphrase + SSID ผ่าน PBKDF2 คำนวณแยกกันทั้งสองฝั่งโดยไม่ส่งผ่านเครือข่าย
+- **PTK**: กุญแจที่ใช้เข้ารหัสข้อมูลจริงระหว่าง session ได้จากการนำ PMK ผ่านฟังก์ชัน PRF ร่วมกับ ANonce, SNonce และ MAC Address ของทั้งสองฝ่าย
+
+PMK เป็นรากฐานคงที่ (จนกว่าจะเปลี่ยนรหัสผ่าน) ส่วน PTK สร้างใหม่ทุกครั้งที่เชื่อมต่อ (เพราะ Nonce สุ่มใหม่เสมอ) ทำให้แต่ละ session มีกุญแจเข้ารหัสข้อมูลไม่ซ้ำกัน
+
 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
+
+จาก log จริงในข้อ 5.4.2 ESP32 ผ่านขั้นตอน Authentication และ Association ได้สำเร็จก่อน เพราะขั้นตอนเหล่านี้ไม่ตรวจสอบรหัสผ่านเลย เป็นเพียง management frame ระดับ 802.11 การตรวจสอบรหัสผ่านจริงเกิดใน 4-Way EAPOL Handshake เมื่อ MIC ที่คำนวณได้ไม่ตรงกัน AP จะปฏิเสธและยุติการเชื่อมต่อ ทำให้เกิด `WIFI_EVENT_STA_DISCONNECTED` ตามมา (reason 2 = `WIFI_REASON_AUTH_EXPIRE`) — สังเกตว่าใน log จริงไม่ได้เกิด `WIFI_EVENT_STA_CONNECTED` เลยในข้อ 5.4.2 เพราะ ESP-IDF จะยิง event นี้ก็ต่อเมื่อผ่านทั้ง association และ 4-way handshake ครบถ้วนแล้วเท่านั้น สถานะ `run` ที่เห็นใน log เป็นเพียง state ภายในของ WiFi driver ระหว่างรอ handshake ไม่ใช่ event ที่ส่งให้ application
+
 4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+
+จะหยุดอยู่หลังจาก Phase 4 (4-Way Handshake) สำเร็จ คือยังคงเกิด `WIFI_EVENT_STA_CONNECTED` ตามปกติ แต่จะไม่มี Event `IP_EVENT_STA_GOT_IP` เกิดขึ้นเลย เนื่องจากไม่มี DHCP Server ตอบสนองคำขอ DHCP Discover/Request ทำให้ ESP32 เชื่อมต่อ Wi-Fi ได้ (associated) แต่ไม่มี Network Layer ใช้งาน
