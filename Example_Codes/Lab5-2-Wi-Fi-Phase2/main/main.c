@@ -19,8 +19,8 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_FAIL_BIT BIT1
 
 // Configurable target Wi-Fi credentials for successful test
-#define EXAMPLE_ESP_WIFI_SSID "MY_SSID"
-#define EXAMPLE_ESP_WIFI_PASS "MY_PASSWORD"
+#define EXAMPLE_ESP_WIFI_SSID      "MY_SSID"
+#define EXAMPLE_ESP_WIFI_PASS      "MY_PASSWORD"
 
 // Convert wifi_reason_code_t to readable string
 static const char *get_disconnect_reason_name(uint8_t reason) {
@@ -31,12 +31,8 @@ static const char *get_disconnect_reason_name(uint8_t reason) {
     return "WIFI_REASON_AUTH_EXPIRE (2)";
   case WIFI_REASON_AUTH_LEAVE:
     return "WIFI_REASON_AUTH_LEAVE (3)";
-  case WIFI_REASON_ASSOC_EXPIRE:
-    return "WIFI_REASON_ASSOC_EXPIRE (4)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (203)";
-  case WIFI_REASON_NOT_AUTHED:
-    return "WIFI_REASON_NOT_AUTHED (6)";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
     return "WIFI_REASON_HANDSHAKE_TIMEOUT (15)";
   case WIFI_REASON_NO_AP_FOUND:
@@ -130,9 +126,6 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "  Target SSID: \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
-  // Clear event bits
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
   wifi_config_t wifi_config = {
       .sta =
           {
@@ -145,6 +138,10 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
+
+  // Clear event bits AFTER stop, so a leftover disconnect event from the
+  // PREVIOUS test's teardown doesn't leak into and falsely fail THIS test.
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   ESP_LOGI(TAG,
            "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
