@@ -447,20 +447,21 @@ void app_main(void) {
 
 | ข้อการทดลอง | เงื่อนไขการสแกน | สถานะ (Success/Error Code) | จำนวน AP ที่พบ (เครือข่าย) | เวลาที่ใช้ในการสแกน (ms) |
 | :---: | :--- | :---: | :---: | :---: |
-| **5.1.1** | สแกนทั่วไปทุก Channel | | | |
-| **5.1.2** | กำหนดสแกนเฉพาะ Channel 1 | | | |
-| **5.1.3** | กำหนดสแกน SSID ที่มีจริง | | | |
-| **5.1.4** | กำหนดสแกน SSID ที่ไม่มีจริง | | | |
+| **5.1.1** | สแกนทั่วไปทุก Channel | Success (ESP_OK)|16 |2500 |
+| **5.1.2** | กำหนดสแกนเฉพาะ Channel 1 |Success (ESP_OK) |4 |200 |
+| **5.1.3** | กำหนดสแกน SSID ที่มีจริง |Success (ESP_OK) |6 |2499 |
+| **5.1.4** | กำหนดสแกน SSID ที่ไม่มีจริง |Success (ESP_OK) |0 |~2500 |
 
 ### 6.2 ตารางรายละเอียด AP ที่พบจากการสแกนทั่วไป (ข้อ 5.1.1)
 
 | ลำดับ | ชื่อเครือข่าย (SSID) | MAC Address (BSSID) | ความแรงสัญญาณ (RSSI: dBm) | ช่องความถี่ (Channel) | ประเภทการเข้ารหัส (Encryption Type) |
 | :---: | :--- | :--- | :---: | :---: | :--- |
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 |KMITL-Legacy |78:17:BE:C0:7D:A0 |-58  dBm |1 |WPA2_ENTERPRISE |
+| 2 |KMITL-Legacy |78:17:BE:C0:66:20 |-76  dBm  |1 |WPA2_ENTERPRISE |
+| 3 |KMITL-Legacy |78:17:BE:A9:94:E0 |-80  dBm |6 |WPA2_ENTERPRISE |
+| 4 |KMITL-Legacy |78:17:BE:C0:66:60 |-83  dBm  |11 |WPA2_ENTERPRISE |
+| 5 |KMITL-Legacy |78:17:BE:A9:94:60 |-87  dBm |11 |WPA2_ENTERPRISE |
+| 6 |KMITL-Legacy |78:17:BE:A9:94:60 |-91  dBm |11 |WPA2_ENTERPRISE |
 
 ---
 
