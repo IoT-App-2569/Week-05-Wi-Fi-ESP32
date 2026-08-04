@@ -330,22 +330,51 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| **5.4.1** | Password ถูกต้อง | เกิด | เกิด | Passed | N/A (0 / 0x00) |
+| **5.4.2** | Password ผิด | เกิด | ไม่เกิด | Failed | 15 / 0x0F (HANDSHAKE_TIMEOUT) |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
 | :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **IP Address** | 192.168.33.203 |
+| **Subnet Mask** | 255.255.255.0 |
+| **Default Gateway** | 192.168.33.149 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+
+ตอบ เพราะกระบวนการ 4-Way Handshake นำอัลกอริทึมทางคณิตศาสตร์แบบ Zero-Knowledge Proof มาใช้ โดยทั้ง AP และ ESP32 จะนำรหัสผ่าน (Passphrase) มาแปลงเป็น PMK (Pairwise Master Key) ไว้ในเครื่องตนเองก่อน จากนั้นจึงแลกเปลี่ยนค่าสุ่มที่ไม่เป็นความลับ ได้แก่ ANonce (จาก AP) และ SNonce (จาก ESP32)
+
+ทั้งสองฝั่งจะนำ PMK, ANonce, SNonce และ MAC Address ของทั้งคู่มาคำนวณแยกกันเพื่อสร้าง PTK (Pairwise Transient Key) แล้วส่งค่า MIC (Message Integrity Code) ที่ได้จากการ Hash มาเข้ารหัสยืนยัน หาก MIC ที่คำนวณได้ตรงกัน จะถือว่าทั้งสองฝั่งมี Password เดียวกันสำเร็จ โดย ไม่มีการส่ง Password หรือ PMK ออกไปบนคลื่นวิทยุ
+
 2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+
+ตอบ PMK (Pairwise Master Key):
+
+ที่มา: ได้จากการคำนวณสมการ PBKDF2 โดยใช้ Passphrase (รหัสผ่าน Wi-Fi) ผสมกับ SSID
+
+บทบาท: เป็น Master Key ถาวรที่ใช้เป็นวัตถุดิบหลักในการสร้าง PTK
+
+PTK (Pairwise Transient Key):
+
+ที่มา: เกิดจากการนำ PMK + ANonce + SNonce + AP MAC + STA MAC มาถอดรหัสผ่านฟังก์ชัน PRF (Pseudo-Random Function) ในระหว่างทำ 4-Way Handshake
+
+บทบาท: เป็นคีย์ชั่วคราวที่ใช้จริงในการเข้ารหัส/ถอดรหัสข้อมูล (Data Frames) แบบ Unicast รวมถึงตรวจสอบความถูกต้องของข้อมูล (MIC) ระหว่าง ESP32 กับ AP ในการใช้งานช่วงเซสชันนั้นๆ
+
 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
+
+ตอบ เพราะ Event WIFI_EVENT_STA_CONNECTED ถูกออกแบบให้ส่งออกมาทันทีเมื่อสิ้นสุด Phase 3 (Association Phase) ซึ่งเป็นการตกลงความสัมพันธ์ระดับ Link Layer (Layer 2) ว่า ESP32 ผูกติดกับ AP และได้รับ Association ID (AID) แล้ว
+
+เนื่องจากในมาตรฐาน 802.11 การตรวจสอบ Password จะเริ่มต้นใน Phase 4 (4-Way Handshake) หลังจบ Phase 3 ดังนั้น บอร์ดจึงได้รับ Event CONNECTED ก่อน เมื่อเข้าสู่ Phase 4 แล้วพบว่า Password ผิด (คำนวณ MIC ไม่ตรงกัน) AP หรือ ESP32 จึงตัดการเชื่อมต่อและส่ง Event DISCONNECTED ออกตามมาทีหลังพร้อม Reason Code 15
+
 4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+
+ตอบ ผลการทดลองจะ ทำงานสำเร็จผ่าน Phase 4 (4-Way Handshake) สังเกตได้จากการเกิด Event WIFI_EVENT_STA_CONNECTED และสามารถส่งเฟรมเข้ารหัสระดับ Layer 2 ได้ปกติ
+
+แต่ขั้นตอนจะไป ค้างสติ๊กติดอยู่ที่ Phase 5 (DHCP IP Assignment) เนื่องจาก ESP32 ส่งแพ็กเกจ DHCP Discover ออกไปแล้วไม่มีตอบกลับ
+
+ผลลัพธ์คือ จะไม่เกิด Event IP_EVENT_STA_GOT_IP ขึ้น (บอร์ดจะไม่ได้รับหมายเลข IP Address) และโปรแกรมจะตกไปอยู่ที่สถานะ TEST TIMEOUT 
