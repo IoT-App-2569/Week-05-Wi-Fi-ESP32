@@ -315,29 +315,52 @@ void app_main(void) {
 ## 6. ตารางบันทึกผลการทดลอง (Experiment Results)
 
 ให้นักศึกษาบันทึกผลลัพธ์จากการสังเกตใน Serial Console ลงในตารางต่อไปนี้:
-
 ### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองในระดับ Link Layer
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event ที่ได้รับ | ผลการผูกสัมพันธ์ Link Layer | ค่า Association ID (AID) ที่ได้ | Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง | | | | |
-| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง | | | | |
+| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง (SSID: iPhoneSayparn) | `WIFI_EVENT_STA_CONNECTED` | สำเร็จ สามารถทำ Authentication และ Association ได้สมบูรณ์ (Phase 2 และ Phase 3 Completed) | 34680 | - |
+| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง (SSID: NON_EXISTENT_AP_9999) | `WIFI_EVENT_STA_DISCONNECTED` | ไม่สำเร็จ ไม่สามารถเข้าสู่ขั้นตอน Authentication และ Association ได้ เนื่องจากไม่พบ AP | - | 201 (0xC9) `WIFI_REASON_NO_AP_FOUND` |
 
 ### 6.2 บันทึกข้อมูล Link Layer จาก Event `WIFI_EVENT_STA_CONNECTED` (ข้อ 5.3.1)
 
 | พารามิเตอร์ Link Layer | ค่าที่อ่านได้จริงจาก Forensic Log |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **Auth Mode Enum** | |
-| **Association ID (AID)** | |
+| **SSID** | iPhoneSayparn |
+| **BSSID (MAC Address)** | A2:FA:D0:08:08:0C |
+| **Channel** | 6 |
+| **Auth Mode Enum** | 3 (WPA2-PSK) |
+| **Association ID (AID)** | 34680 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. **Association ID (AID)** คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?
+
+**คำตอบ:**  
+Association ID (AID) คือ หมายเลขประจำตัวที่ Access Point กำหนดให้กับอุปกรณ์ Station หลังจากการ Association สำเร็จใน Phase 3 เพื่อใช้ระบุอุปกรณ์ภายในเครือข่าย Wi-Fi และจัดการการรับส่งข้อมูล โดย ESP-IDF ส่งค่าดังกล่าวกลับมาในโครงสร้าง `wifi_event_sta_connected_t` ผ่านตัวแปร `event->aid`
+
+
 2. เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event `WIFI_EVENT_STA_CONNECTED` ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?
+
+**คำตอบ:**  
+เนื่องจาก Phase 2 (Authentication) และ Phase 3 (Association) เป็นกระบวนการเชื่อมต่อระดับ Link Layer ซึ่งยังไม่ได้ตรวจสอบรหัสผ่าน WPA2-PSK จริง โดยการตรวจสอบรหัสผ่านจะเกิดขึ้นใน Phase 4 (4-Way Handshake) ดังนั้นอุปกรณ์อาจได้รับ Event `WIFI_EVENT_STA_CONNECTED` ก่อน และจะล้มเหลวภายหลังหากรหัสผ่านผิด
+
+
 3. หาก Router มีการตั้งค่า **MAC Address Filtering** (อนุญาตเฉพาะ MAC ที่ลงทะเบียน) ESP32 จะล้มเหลวในเฟสใด และจะส่ง Disconnect Reason Code ใดออกมา?
+
+**คำตอบ:**  
+ESP32 จะล้มเหลวใน Phase 2 (Authentication) เนื่องจาก Access Point ปฏิเสธการยืนยันตัวตนจาก MAC Address ที่ไม่ได้รับอนุญาต และส่ง Disconnect Reason Code `WIFI_REASON_AUTH_FAIL` (Reason Code 202)
+
+
 4. สรุปความแตกต่างสำคัญระหว่างจุดสิ้นสุดของ **Phase 3 (Link-Layer Connected)** กับจุดสิ้นสุดของ **Phase 5 (IP Address Assigned)**
+
+**คำตอบ:**  
+
+| Phase | จุดสิ้นสุด | รายละเอียด |
+| :---: | :--- | :--- |
+| **Phase 3: Link-Layer Connected** | เกิด Event `WIFI_EVENT_STA_CONNECTED` | ESP32 เชื่อมต่อกับ Access Point สำเร็จในระดับ MAC Layer มี BSSID, Channel และ AID แต่ยังไม่มี IP Address |
+| **Phase 5: IP Address Assigned** | เกิด Event `IP_EVENT_STA_GOT_IP` | ESP32 ได้รับ IP Address จาก DHCP Server สามารถสื่อสารผ่าน Network Layer และใช้งาน Internet ได้ |
+
+**สรุป:** Phase 3 เป็นการเชื่อมต่อระหว่างอุปกรณ์กับ AP ในระดับ Link Layer ส่วน Phase 5 เป็นการได้รับ Network Configuration เพื่อเข้าสู่การสื่อสารบนเครือข่าย IP

@@ -57,4 +57,6 @@ sequenceDiagram
 ## 4. คำถามทบทวนความเข้าใจ (Checkpoints)
 
 1. ทำไมในเครือข่าย WPA2-PSK ขั้นตอน Auth Phase นี้ถึงผ่านได้แม้เราจะพิมพ์รหัสผ่านผิด?
+เนื่องจากขั้นตอน Authentication Phase เป็นเพียงการยืนยันการเชื่อมต่อระหว่าง ESP32 กับ Access Point ยังไม่ได้ตรวจสอบรหัสผ่านจริง จึงสามารถผ่านได้แม้ใส่ Password ผิด การตรวจสอบรหัสผ่านจะเกิดขึ้นในขั้นตอน 4-Way Handshake (Phase 4) หาก Key ไม่ตรงกันจึงจะถูกตัดการเชื่อมต่อ
 2. หาก Router มีการเปิดใช้งาน **MAC Address Filtering** (อนุญาตเฉพาะอุปกรณ์ที่ลงทะเบียน MAC ไว้) ESP32 จะล้มเหลวที่ขั้นตอนใด และได้ Reason Code อะไร?
+ESP32 จะล้มเหลวในขั้นตอน Association Phase (Phase 3) เนื่องจาก Router ปฏิเสธ MAC Address ที่ไม่ได้รับอนุญาต และจะเกิด Event WIFI_EVENT_STA_DISCONNECTED พร้อม Reason Code WIFI_REASON_ASSOC_FAIL (203) หรือ WIFI_REASON_ASSOC_DENIED (12) ขึ้นอยู่กับอุปกรณ์ Router ที่ใช้งาน

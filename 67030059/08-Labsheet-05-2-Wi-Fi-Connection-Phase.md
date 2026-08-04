@@ -368,26 +368,32 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.2.1** | SSID และ Password ถูกต้อง | | | | |
-| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | | | | |
-| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | | | | |
+| **5.2.1** | SSID และ Password ถูกต้อง | WIFI_EVENT_STA_CONNECTED และ IP_EVENT_STA_GOT_IP|Passed |- | เชื่อมต่อ WiFi สำเร็จ และได้รับ IP Address จาก DHCP|
+| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) |WIFI_EVENT_STA_DISCONNECTED |Failed |201 / 0xC9 |WIFI_REASON_NO_AP_FOUND ไม่พบ Access Point ที่มี SSID ระบุไว้ |
+| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด |WIFI_EVENT_STA_DISCONNECTED |Failed |201 / 0xC9* |WIFI_REASON_NO_AP_FOUND ไม่พบ Access Point หรือไม่สามารถค้นหา AP ได้ในขณะทดสอบ |
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
 | พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **SSID** |iPhoneSayparn|
+| **BSSID (MAC Address)** |A2:FA:D0:08:08:0C |
+| **Channel** |6 |
+| **IP Address** |172.20.10.3 |
+| **Subnet Mask** |255.255.255.240 |
+| **Default Gateway** |172.20.10.1 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
+ตอบ เพราะ ESP32 ค้นหา SSID ในขั้นตอน Scan แล้วไม่พบ Access Point ที่ตรงกัน จึงไม่สามารถเชื่อมต่อได้ และเกิด WIFI_REASON_NO_AP_FOUND (201)
 2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
+ตอบ เพราะ SSID ถูกต้องจึงผ่านการค้นหาและเชื่อมต่อ AP ได้ แต่ Password ไม่ตรง ทำให้ตรวจสอบ Key ในขั้นตอน 4-Way Handshake ไม่ผ่าน จึง Disconnect
 3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
+ตอบ WIFI_EVENT_STA_CONNECTED → IP_EVENT_STA_GOT_IP
+STA_CONNECTED คือเชื่อมต่อ WiFi กับ AP สำเร็จ (Layer 2)
+GOT_IP คือได้รับ IP จาก DHCP และพร้อมสื่อสารในเครือข่าย (Layer 3)
 4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+ตอบ ใช้บอกสาเหตุของการ Disconnect ทำให้ระบบสามารถวิเคราะห์ปัญหาและเลือกวิธีแก้ไข เช่น เชื่อมต่อใหม่ แจ้งเตือน หรือแก้ไขค่าการเชื่อมต่อได้

@@ -324,28 +324,46 @@ void app_main(void) {
 
 ## 6. ตารางบันทึกผลการทดลอง (Experiment Results)
 
-ให้นักศึกษาบันทึกผลลัพธ์จากการสังเกตใน Serial Console ลงในตารางต่อไปนี้:
-
 ### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองใน Handshake & IP Phase
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
-| :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| :---: | :--- | :---: | :---: | :--- | :--- |
+| **5.4.1** | Password ถูกต้อง | ไม่เกิด | ไม่เกิด | ไม่สำเร็จ เนื่องจาก 4-Way Handshake เกิด Timeout ก่อนเข้าสู่ขั้นตอน DHCP | **204 (0xCC) - WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT** |
+| **5.4.2** | Password ผิด | ไม่เกิด | ไม่เกิด | ไม่สำเร็จ เนื่องจากการตรวจสอบ Key ใน 4-Way Handshake ไม่ผ่าน (MIC mismatch) | **204 (0xCC) - WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT** |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
 | :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
-
+| **IP Address** | ไม่ได้รับ IP Address |
+| **Subnet Mask** | ไม่ได้รับค่า |
+| **Default Gateway** | ไม่ได้รับค่า |
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
-1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
-2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
-3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
-4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+### 1. เหตุใดกระบวนการ 4-Way Handshake จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+
+กระบวนการ 4-Way Handshake ของ WPA2-PSK สามารถตรวจสอบรหัสผ่านได้โดยไม่ต้องส่งรหัสผ่านจริงผ่านอากาศ เนื่องจากระบบจะนำ Password ที่ผู้ใช้กำหนดไปสร้างเป็นค่า PMK (Pairwise Master Key) และใช้ PMK ร่วมกับข้อมูลเฉพาะของอุปกรณ์ เช่น MAC Address และค่าความสุ่ม (Nonce) เพื่อสร้าง PTK สำหรับการเข้ารหัสและตรวจสอบความถูกต้องของการเชื่อมต่อ
+
+ในขั้นตอนนี้ ESP32 และ Access Point จะสร้าง Key ที่ควรจะตรงกัน หาก Password ถูกต้อง ค่า MIC (Message Integrity Code) ที่ใช้ตรวจสอบความถูกต้องของข้อมูลจะตรงกัน ทำให้การเชื่อมต่อสำเร็จ แต่หาก Password ผิด ค่า MIC จะไม่ตรงกัน ทำให้ระบบปฏิเสธการเชื่อมต่อ ดังนั้นจึงไม่จำเป็นต้องส่ง Password จริงออกไปในเครือข่าย
+
+### 2. อธิบายบทบาทและที่มาของคีย์ PMK (Pairwise Master Key) และ PTK (Pairwise Transient Key) ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+
+PMK (Pairwise Master Key) เป็น Key หลักที่สร้างขึ้นจากรหัสผ่าน Wi-Fi (Pre-Shared Key) และชื่อเครือข่าย (SSID) โดยทำหน้าที่เป็นพื้นฐานสำหรับสร้าง Key ที่ใช้ในการสื่อสารอย่างปลอดภัยระหว่างอุปกรณ์กับ Access Point
+
+PTK (Pairwise Transient Key) เป็น Key ชั่วคราวที่ถูกสร้างขึ้นระหว่างกระบวนการ 4-Way Handshake โดยใช้ PMK ร่วมกับข้อมูลของทั้งสองอุปกรณ์ ได้แก่ MAC Address ของ ESP32, MAC Address ของ Access Point และค่าความสุ่ม (Nonce)
+
+ดังนั้น PMK จะทำหน้าที่เป็น Key ต้นทางสำหรับสร้าง PTK และ PTK จะถูกนำไปใช้ในการเข้ารหัสเฟรมข้อมูลที่ส่งระหว่าง ESP32 และ Access Point ทำให้ข้อมูลที่รับส่งผ่าน Wi-Fi มีความปลอดภัย
+
+### 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event WIFI_EVENT_STA_CONNECTED ก่อนที่จะเกิด Event WIFI_EVENT_STA_DISCONNECTED ตามมาในภายหลัง?
+
+เนื่องจาก Event `WIFI_EVENT_STA_CONNECTED` เป็นเหตุการณ์ที่บอกว่า ESP32 สามารถผ่านขั้นตอน Authentication และ Association ในระดับ Link Layer ได้สำเร็จแล้ว ซึ่งขั้นตอนนี้เป็นเพียงการสร้างความสัมพันธ์ระหว่างอุปกรณ์กับ Access Point เท่านั้น ยังไม่ได้ตรวจสอบ Password จริง
+
+การตรวจสอบ Password ของระบบ WPA2-PSK จะเกิดขึ้นใน Phase 4 หรือขั้นตอน 4-Way Handshake โดย ESP32 และ Access Point จะทำการแลกเปลี่ยน Key และตรวจสอบค่า MIC หาก Password ที่ใช้ไม่ถูกต้อง Key ที่สร้างขึ้นจะไม่ตรงกัน ทำให้การตรวจสอบล้มเหลวและเกิด Event `WIFI_EVENT_STA_DISCONNECTED` ตามมาในภายหลัง
+
+### 4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+
+หากเครือข่าย Wi-Fi ไม่มี DHCP Server กระบวนการเชื่อมต่อจะสามารถผ่านขั้นตอน Authentication, Association และ 4-Way Handshake ได้สำเร็จ เนื่องจากการตรวจสอบสิทธิ์ของ Wi-Fi ยังทำงานได้ตามปกติ แต่จะไม่สามารถเข้าสู่ขั้นตอนการได้รับ IP Address ได้
+
+ดังนั้นกระบวนการจะหยุดอยู่ที่ Phase 5 (IP Address Assignment) เนื่องจากไม่มี DHCP Server สำหรับแจก IP Address, Subnet Mask และ Default Gateway ให้กับ ESP32 ทำให้จะไม่เกิด Event `IP_EVENT_STA_GOT_IP` และอุปกรณ์จะยังไม่สามารถสื่อสารผ่านเครือข่าย IP ได้

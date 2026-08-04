@@ -57,4 +57,7 @@ sequenceDiagram
 ## 4. คำถามทบทวนความเข้าใจ (Checkpoints)
 
 1. **Association ID (AID)** คืออะไร และมีประโยชน์อย่างไรต่อ Access Point ในการจัดการอุปกรณ์ไร้สาย?
+Association ID (AID) คือหมายเลขประจำตัวที่ Access Point กำหนดให้กับอุปกรณ์ที่เชื่อมต่อสำเร็จในขั้นตอน Association Phase เพื่อใช้ระบุและจัดการสถานี (Station) แต่ละเครื่องในเครือข่าย เช่น การส่งข้อมูลและควบคุมการสื่อสารระหว่าง AP กับอุปกรณ์
 2. หาก Router รองรับอุปกรณ์ได้สูงสุด 32 เครื่อง และ ESP32 เป็นเครื่องที่ 33 พยายามจะเชื่อมต่อ จะเกิดเหตุการณ์ใดขึ้นใน Association Phase?
+ESP32 จะไม่สามารถผ่านขั้นตอน Association Phase (Phase 3) ได้ เนื่องจาก Router ไม่มีทรัพยากรเหลือสำหรับรองรับอุปกรณ์เพิ่มขึ้น ทำให้เกิด Event WIFI_EVENT_STA_DISCONNECTED และได้รับ Reason Code WIFI_REASON_ASSOC_FAIL (203) หรือ Reason Code ที่แสดงถึงการปฏิเสธ Association จาก Access Point
+

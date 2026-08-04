@@ -31,24 +31,24 @@ static const char *get_disconnect_reason_name(uint8_t reason) {
     return "WIFI_REASON_AUTH_EXPIRE (2)";
   case WIFI_REASON_AUTH_LEAVE:
     return "WIFI_REASON_AUTH_LEAVE (3)";
-  case WIFI_REASON_ASSOC_EXPIRE:
-    return "WIFI_REASON_ASSOC_EXPIRE (4)";
+  case WIFI_REASON_ASSOC_LEAVE:
+    return "WIFI_REASON_ASSOC_LEAVE (8)";
+  case WIFI_REASON_ASSOC_NOT_AUTHED:
+    return "WIFI_REASON_ASSOC_NOT_AUTHED (6)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (203)";
-  case WIFI_REASON_NOT_AUTHED:
-    return "WIFI_REASON_NOT_AUTHED (6)";
+  case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
+    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (15)";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
-    return "WIFI_REASON_HANDSHAKE_TIMEOUT (15)";
+    return "WIFI_REASON_HANDSHAKE_TIMEOUT (204)";
+  case WIFI_REASON_BEACON_TIMEOUT:
+    return "WIFI_REASON_BEACON_TIMEOUT (200)";
   case WIFI_REASON_NO_AP_FOUND:
     return "WIFI_REASON_NO_AP_FOUND (201)";
   case WIFI_REASON_AUTH_FAIL:
     return "WIFI_REASON_AUTH_FAIL (202)";
-  case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
-    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204)";
   case WIFI_REASON_CONNECTION_FAIL:
-    return "WIFI_REASON_CONNECTION_FAIL (208)";
-  case WIFI_REASON_BEACON_TIMEOUT:
-    return "WIFI_REASON_BEACON_TIMEOUT (200)";
+    return "WIFI_REASON_CONNECTION_FAIL (205)";
   default:
     return "OTHER_DISCONNECT_REASON";
   }
@@ -130,9 +130,6 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "  Target SSID: \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
-  // Clear event bits
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
   wifi_config_t wifi_config = {
       .sta =
           {
@@ -145,6 +142,20 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
+
+  // Small delay so the (async) WIFI_EVENT_STA_DISCONNECTED that
+  // esp_wifi_stop() itself generates (reason ASSOC_LEAVE) has a chance
+  // to arrive and be discarded BEFORE we clear the bits below.
+  // Without this, that stale event could still set WIFI_FAIL_BIT
+  // right after we clear it, causing the new test to report FAILED
+  // immediately without ever really trying to connect.
+  vTaskDelay(pdMS_TO_TICKS(200));
+
+  // NOTE (แก้ไข): Clear event bits หลังจาก esp_wifi_stop() + delay
+  // เพราะ esp_wifi_stop() เองก็ยิง WIFI_EVENT_STA_DISCONNECTED (Reason 8, ASSOC_LEAVE)
+  // ถ้าเคลียร์ก่อน stop() ค่า event เก่าที่ค้างจาก AP รอบก่อนจะไปติด WIFI_FAIL_BIT
+  // ทำให้ xEventGroupWaitBits() ด้านล่างจบทันทีโดยไม่รอผลจริงของการเชื่อมต่อครั้งใหม่
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   ESP_LOGI(TAG,
            "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");

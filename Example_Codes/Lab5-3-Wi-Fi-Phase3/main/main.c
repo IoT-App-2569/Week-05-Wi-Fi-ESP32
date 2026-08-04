@@ -9,17 +9,17 @@
 #include "nvs_flash.h"
 #include <stdio.h>
 #include <string.h>
-
+ 
 static const char *TAG = "LAB_AUTH_ASSOC";
-
+ 
 static EventGroupHandle_t s_wifi_event_group;
-
+ 
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
-
+ 
 #define TARGET_WIFI_SSID "MY_SSID"
-#define TARGET_WIFI_PASS "1234567890"
-
+#define TARGET_WIFI_PASS "MY_PASSWORD"
+ 
 // Convert wifi_reason_code_t to readable string with phase diagnosis
 static const char *get_disconnect_reason_info(uint8_t reason) {
   switch (reason) {
@@ -30,17 +30,17 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
   case WIFI_REASON_AUTH_FAIL:
     return "WIFI_REASON_AUTH_FAIL (1/202) [Phase 2: Auth Rejected / MAC "
            "Filter]";
-  case WIFI_REASON_ASSOC_EXPIRE:
-    return "WIFI_REASON_ASSOC_EXPIRE (4) [Phase 3: Assoc Timeout / Packet "
-           "Loss]";
+  case WIFI_REASON_ASSOC_LEAVE:
+    return "WIFI_REASON_ASSOC_LEAVE (8) [Phase 3: Station Left / "
+           "Reconfigured]";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (3/203) [Phase 3: Assoc Rejected / "
            "Mismatch]";
   case WIFI_REASON_ASSOC_TOOMANY:
     return "WIFI_REASON_ASSOC_TOOMANY (5/17) [Phase 3: AP Max Clients "
            "Exceeded]";
-  case WIFI_REASON_NOT_AUTHED:
-    return "WIFI_REASON_NOT_AUTHED (6) [Phase 3: Assoc Sent Before Auth]";
+  case WIFI_REASON_ASSOC_NOT_AUTHED:
+    return "WIFI_REASON_ASSOC_NOT_AUTHED (6) [Phase 3: Assoc Sent Before Auth]";
   case WIFI_REASON_NO_AP_FOUND:
     return "WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
@@ -52,7 +52,7 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
     return "OTHER_DISCONNECT_REASON";
   }
 }
-
+ 
 // Event handler focusing on Link-Layer (Auth & Assoc Phase)
 static void wifi_event_handler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data) {
@@ -67,7 +67,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
       ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_connect() returned %s (0x%x)",
                esp_err_to_name(err_conn), err_conn);
       break;
-
+ 
     case WIFI_EVENT_STA_CONNECTED: {
       wifi_event_sta_connected_t *event =
           (wifi_event_sta_connected_t *)event_data;
@@ -86,7 +86,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
       xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
       break;
     }
-
+ 
     case WIFI_EVENT_STA_DISCONNECTED: {
       wifi_event_sta_disconnected_t *event =
           (wifi_event_sta_disconnected_t *)event_data;
@@ -101,14 +101,14 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
       xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
       break;
     }
-
+ 
     default:
       ESP_LOGI(TAG, "[EVENT FORENSIC]: WIFI_EVENT ID %ld received", event_id);
       break;
     }
   }
 }
-
+ 
 static void test_auth_assoc_phase(const char *test_title, const char *ssid,
                                   const char *password) {
   ESP_LOGI(TAG, "\n");
@@ -121,9 +121,7 @@ static void test_auth_assoc_phase(const char *test_title, const char *ssid,
       "------------------------------------------------------------------");
   ESP_LOGI(TAG, "  Target SSID    : \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
-
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
+ 
   wifi_config_t wifi_config = {
       .sta =
           {
@@ -134,25 +132,31 @@ static void test_auth_assoc_phase(const char *test_title, const char *ssid,
   strncpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
   strncpy((char *)wifi_config.sta.password, password,
           sizeof(wifi_config.sta.password));
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
-
+ 
+  // NOTE (แก้ไข): ย้าย Clear event bits มาไว้ตรงนี้ หลังจาก esp_wifi_stop()
+  // เพราะ esp_wifi_stop() เองก็ยิง WIFI_EVENT_STA_DISCONNECTED (Reason 8, ASSOC_LEAVE)
+  // ถ้าเคลียร์ก่อน stop() ค่า event เก่าที่ค้างจาก AP รอบก่อนจะไปติด WIFI_FAIL_BIT
+  // ทำให้ xEventGroupWaitBits() ด้านล่างจบทันทีโดยไม่รอผลจริงของการเชื่อมต่อครั้งใหม่
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
+ 
   ESP_LOGI(TAG,
            "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
   esp_err_t err_cfg = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
   ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_set_config() returned %s (0x%x)",
            esp_err_to_name(err_cfg), err_cfg);
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_start()");
   esp_err_t err_start = esp_wifi_start();
   ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_start() returned %s (0x%x)",
            esp_err_to_name(err_start), err_start);
-
+ 
   EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
                                          WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
                                          pdFALSE, pdFALSE, pdMS_TO_TICKS(8000));
-
+ 
   if (bits & WIFI_CONNECTED_BIT) {
     ESP_LOGI(
         TAG,
@@ -165,10 +169,10 @@ static void test_auth_assoc_phase(const char *test_title, const char *ssid,
     ESP_LOGE(TAG, "[RESULT]: TEST TIMEOUT - Response timeout from AP.");
   }
 }
-
+ 
 void app_main(void) {
   s_wifi_event_group = xEventGroupCreate();
-
+ 
   // 1. Initialize NVS Flash
   ESP_LOGI(TAG, "[FORENSIC]: Call nvs_flash_init()");
   esp_err_t ret = nvs_flash_init();
@@ -183,24 +187,24 @@ void app_main(void) {
              esp_err_to_name(ret), ret);
   }
   ESP_ERROR_CHECK(ret);
-
+ 
   // 2. Initialize Network Interface and Event Loop
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_netif_init()");
   ESP_ERROR_CHECK(esp_netif_init());
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_event_loop_create_default()");
   ESP_ERROR_CHECK(esp_event_loop_create_default());
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_netif_create_default_wifi_sta()");
   esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
   ESP_LOGI(TAG, "[FORENSIC]: esp_netif_create_default_wifi_sta() returned %p",
            sta_netif);
-
+ 
   // 3. Initialize Wi-Fi Driver
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_init(&cfg)");
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
+ 
   // 4. Register Wi-Fi Event Handler
   esp_event_handler_instance_t instance_any_id;
   ESP_LOGI(TAG,
@@ -208,10 +212,10 @@ void app_main(void) {
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
       WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL,
       &instance_any_id));
-
+ 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)");
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-
+ 
   ESP_LOGI(
       TAG,
       "==================================================================");
@@ -221,21 +225,21 @@ void app_main(void) {
   ESP_LOGI(
       TAG,
       "==================================================================");
-
+ 
   // ------------------------------------------------------------------
   // 5.3.1 Auth & Assoc Test with Target AP (Link-Layer Success Case)
   // ------------------------------------------------------------------
   test_auth_assoc_phase("Experiment 5.3.1: Link-Layer Auth & Assoc Phase Test",
                         TARGET_WIFI_SSID, TARGET_WIFI_PASS);
-
+ 
   vTaskDelay(pdMS_TO_TICKS(2000));
-
+ 
   // ------------------------------------------------------------------
   // 5.3.2 Simulated Failure Case: Wrong SSID (Fails at Scan Phase)
   // ------------------------------------------------------------------
   test_auth_assoc_phase("Experiment 5.3.2: Link-Layer Test - Non-Existent AP",
                         "NON_EXISTENT_AP_9999", "12345678");
-
+ 
   ESP_LOGI(
       TAG,
       "==================================================================");
@@ -245,3 +249,4 @@ void app_main(void) {
       TAG,
       "==================================================================");
 }
+ 

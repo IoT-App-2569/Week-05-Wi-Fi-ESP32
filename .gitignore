@@ -1,1 +1,13 @@
-.obsidian/**
+# ESP-IDF build artifacts
+build/
+managed_components/
+dependencies.lock
+sdkconfig.old
+ 
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+ 
+# OS files
+.DS_Store
+Thumbs.db
