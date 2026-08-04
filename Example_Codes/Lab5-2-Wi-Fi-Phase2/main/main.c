@@ -1,14 +1,14 @@
-#include "esp_event.h"
-#include "esp_log.h"
-#include "esp_netif.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
-#include "freertos/task.h"
-#include "nvs_flash.h"
 #include <stdio.h>
 #include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/event_groups.h"
+#include "esp_system.h"
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_log.h"
+#include "nvs_flash.h"
+#include "esp_netif.h"
 
 static const char *TAG = "LAB_WIFI_CONN";
 
@@ -16,11 +16,11 @@ static const char *TAG = "LAB_WIFI_CONN";
 static EventGroupHandle_t s_wifi_event_group;
 
 #define WIFI_CONNECTED_BIT BIT0
-#define WIFI_FAIL_BIT BIT1
+#define WIFI_FAIL_BIT      BIT1
 
 // Configurable target Wi-Fi credentials for successful test
-#define EXAMPLE_ESP_WIFI_SSID "MY_SSID"
-#define EXAMPLE_ESP_WIFI_PASS "MY_PASSWORD"
+#define EXAMPLE_ESP_WIFI_SSID      "Mitsuren"
+#define EXAMPLE_ESP_WIFI_PASS      "limerreen"
 
 // Convert wifi_reason_code_t to readable string
 static const char *get_disconnect_reason_name(uint8_t reason) {
@@ -107,8 +107,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
       ESP_LOGI(TAG, "=======================================================");
       ESP_LOGI(TAG, "[EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!");
       ESP_LOGI(TAG, "  -> IP Address : " IPSTR, IP2STR(&event->ip_info.ip));
-      ESP_LOGI(TAG, "  -> Netmask    : " IPSTR,
-               IP2STR(&event->ip_info.netmask));
+      ESP_LOGI(TAG, "  -> Netmask    : " IPSTR, IP2STR(&event->ip_info.netmask));
       ESP_LOGI(TAG, "  -> Gateway    : " IPSTR, IP2STR(&event->ip_info.gw));
       ESP_LOGI(TAG, "=======================================================");
       xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
@@ -118,15 +117,11 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
 
 // Function to test Wi-Fi connection with specific config
 static void test_wifi_connection(const char *test_title, const char *ssid,
-                                 const char *password) {
+                                  const char *password) {
   ESP_LOGI(TAG, "\n");
-  ESP_LOGI(
-      TAG,
-      "------------------------------------------------------------------");
+  ESP_LOGI(TAG, "------------------------------------------------------------------");
   ESP_LOGI(TAG, ">>> %s", test_title);
-  ESP_LOGI(
-      TAG,
-      "------------------------------------------------------------------");
+  ESP_LOGI(TAG, "------------------------------------------------------------------");
   ESP_LOGI(TAG, "  Target SSID: \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
@@ -134,10 +129,9 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
   xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   wifi_config_t wifi_config = {
-      .sta =
-          {
-              .threshold.authmode = WIFI_AUTH_WPA2_PSK,
-          },
+      .sta = {
+          .threshold.authmode = WIFI_AUTH_WPA2_PSK,
+      },
   };
   strncpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
   strncpy((char *)wifi_config.sta.password, password,
@@ -146,8 +140,7 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
 
-  ESP_LOGI(TAG,
-           "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
+  ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
   esp_err_t err_cfg = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
   ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_set_config() returned %s (0x%x)",
            esp_err_to_name(err_cfg), err_cfg);
@@ -157,19 +150,17 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_start() returned %s (0x%x)",
            esp_err_to_name(err_start), err_start);
 
-  /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or
-   * failed (WIFI_FAIL_BIT) */
-  EventBits_t bits = xEventGroupWaitBits(
-      s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE,
-      pdMS_TO_TICKS(10000));
+  /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or failed (WIFI_FAIL_BIT) */
+  EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
+                                         WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+                                         pdFALSE, pdFALSE, pdMS_TO_TICKS(10000));
 
   if (bits & WIFI_CONNECTED_BIT) {
     ESP_LOGI(TAG, "[RESULT]: TEST PASSED - Connected to AP successfully!");
   } else if (bits & WIFI_FAIL_BIT) {
     ESP_LOGW(TAG, "[RESULT]: TEST FAILED - Disconnected event captured.");
   } else {
-    ESP_LOGE(TAG, "[RESULT]: TEST TIMEOUT - Neither connected nor disconnected "
-                  "event received.");
+    ESP_LOGE(TAG, "[RESULT]: TEST TIMEOUT - Neither connected nor disconnected event received.");
   }
 }
 
@@ -200,8 +191,7 @@ void app_main(void) {
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_netif_create_default_wifi_sta()");
   esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
-  ESP_LOGI(TAG, "[FORENSIC]: esp_netif_create_default_wifi_sta() returned %p",
-           sta_netif);
+  ESP_LOGI(TAG, "[FORENSIC]: esp_netif_create_default_wifi_sta() returned %p", sta_netif);
 
   // 3. Initialize Wi-Fi Driver
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -211,14 +201,12 @@ void app_main(void) {
   // 4. Register Event Handlers
   esp_event_handler_instance_t instance_any_id;
   esp_event_handler_instance_t instance_got_ip;
-  ESP_LOGI(TAG,
-           "[FORENSIC]: Call esp_event_handler_instance_register(WIFI_EVENT)");
+  ESP_LOGI(TAG, "[FORENSIC]: Call esp_event_handler_instance_register(WIFI_EVENT)");
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
       WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL,
       &instance_any_id));
 
-  ESP_LOGI(TAG,
-           "[FORENSIC]: Call esp_event_handler_instance_register(IP_EVENT)");
+  ESP_LOGI(TAG, "[FORENSIC]: Call esp_event_handler_instance_register(IP_EVENT)");
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
       IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL,
       &instance_got_ip));
@@ -226,45 +214,33 @@ void app_main(void) {
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)");
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 
-  ESP_LOGI(
-      TAG,
-      "==================================================================");
-  ESP_LOGI(TAG,
-           "  Lab 5.2: Wi-Fi Connection & IP Assignment (ESP-IDF Forensic)");
-  ESP_LOGI(
-      TAG,
-      "==================================================================");
+  ESP_LOGI(TAG, "==================================================================");
+  ESP_LOGI(TAG, "  Lab 5.2: Wi-Fi Connection & IP Assignment (ESP-IDF Forensic)");
+  ESP_LOGI(TAG, "==================================================================");
 
   // ------------------------------------------------------------------
   // 5.2.1 Connecting with Correct SSID & Password (Success Case)
   // ------------------------------------------------------------------
-  test_wifi_connection(
-      "Experiment 5.2.1: Connection Test - Correct Credentials",
-      EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+  test_wifi_connection("Experiment 5.2.1: Connection Test - Correct Credentials",
+                       EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
 
   vTaskDelay(pdMS_TO_TICKS(2000));
 
   // ------------------------------------------------------------------
   // 5.2.2 Connecting with Wrong SSID (Non-existent AP Case)
   // ------------------------------------------------------------------
-  test_wifi_connection(
-      "Experiment 5.2.2: Connection Test - Wrong SSID (No AP Found)",
-      "NON_EXISTENT_SSID_9999", "12345678");
+  test_wifi_connection("Experiment 5.2.2: Connection Test - Wrong SSID (No AP Found)",
+                       "NON_EXISTENT_SSID_9999", "12345678");
 
   vTaskDelay(pdMS_TO_TICKS(2000));
 
   // ------------------------------------------------------------------
   // 5.2.3 Connecting with Correct SSID but Wrong Password (Handshake Fail Case)
   // ------------------------------------------------------------------
-  test_wifi_connection("Experiment 5.2.3: Connection Test - Wrong Password "
-                       "(Auth/Handshake Fail)",
+  test_wifi_connection("Experiment 5.2.3: Connection Test - Wrong Password (Auth/Handshake Fail)",
                        EXAMPLE_ESP_WIFI_SSID, "WRONG_PASS_9999");
 
-  ESP_LOGI(
-      TAG,
-      "==================================================================");
+  ESP_LOGI(TAG, "==================================================================");
   ESP_LOGI(TAG, "  [Phase 2/3/4/5 Completed: Wi-Fi Connection Lab Finished]");
-  ESP_LOGI(
-      TAG,
-      "==================================================================");
+  ESP_LOGI(TAG, "==================================================================");
 }

@@ -1,1 +1,10 @@
-{}
+{
+  "idf.currentSetup": "C:\\Users\\2417th\\esp\\v5.5.1\\esp-idf",
+  "idf.customExtraVars": {},
+  "clangd.path": "C:\\Users\\2417th\\.espressif\\tools\\esp-clang\\esp-19.1.2_20250312\\esp-clang\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=**",
+    "--compile-commands-dir=d:\\Week-05-Wi-Fi-ESP32\\Week-05-Wi-Fi-ESP32\\build"
+  ]
+}

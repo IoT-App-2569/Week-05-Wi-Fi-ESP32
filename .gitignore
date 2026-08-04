@@ -1,1 +1,19 @@
 .obsidian/**
+
+# ESP-IDF build artifacts
+build/
+sdkconfig
+sdkconfig.old
+managed_components/
+dependencies.lock
+
+# Wi-Fi credentials (like .env) - keep the .example template only
+code/wifi_credentials.h
+
+# IDE
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
