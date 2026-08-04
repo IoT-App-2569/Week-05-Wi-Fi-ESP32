@@ -1,1 +1,13 @@
-{}
+{
+  // ESP-IDF extension settings, matching the actual v6.0.2 install
+  // registered in C:\Espressif\tools\eim_idf.json
+  "idf.espIdfPath": "C:\\esp\\v6.0.2\\esp-idf",
+  "idf.toolsPath": "C:\\Espressif\\tools",
+  "idf.pythonBinPath": "C:\\Espressif\\tools\\python\\v6.0.2\\venv\\Scripts\\python.exe",
+  "idf.gitPathWin": "C:\\Program Files\\Git\\cmd\\git.exe",
+  "idf.flashBaudRate": "460800",
+  "idf.monitorBaudRate": "115200",
+  "idf.adapterTargetName": "esp32",
+  "cmake.sourceDirectory": "C:/IOT/Week-05-Wi-Fi-ESP32/code/Lab5-1-Wi-Fi-Phase1",
+  "idf.currentSetup": "C:\\esp\\v6.0.2\\esp-idf"
+}

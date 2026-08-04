@@ -19,8 +19,9 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_FAIL_BIT BIT1
 
 // Configurable target Wi-Fi credentials for successful test
-#define EXAMPLE_ESP_WIFI_SSID "MY_SSID"
-#define EXAMPLE_ESP_WIFI_PASS "MY_PASSWORD"
+#include "wifi_credentials.h"
+#define EXAMPLE_ESP_WIFI_SSID WIFI_SSID
+#define EXAMPLE_ESP_WIFI_PASS WIFI_PASS
 
 // Convert wifi_reason_code_t to readable string
 static const char *get_disconnect_reason_name(uint8_t reason) {
@@ -31,11 +32,11 @@ static const char *get_disconnect_reason_name(uint8_t reason) {
     return "WIFI_REASON_AUTH_EXPIRE (2)";
   case WIFI_REASON_AUTH_LEAVE:
     return "WIFI_REASON_AUTH_LEAVE (3)";
-  case WIFI_REASON_ASSOC_EXPIRE:
+  case WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY:
     return "WIFI_REASON_ASSOC_EXPIRE (4)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (203)";
-  case WIFI_REASON_NOT_AUTHED:
+  case WIFI_REASON_ASSOC_NOT_AUTHED:
     return "WIFI_REASON_NOT_AUTHED (6)";
   case WIFI_REASON_HANDSHAKE_TIMEOUT:
     return "WIFI_REASON_HANDSHAKE_TIMEOUT (15)";

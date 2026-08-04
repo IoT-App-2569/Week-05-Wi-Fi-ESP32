@@ -17,8 +17,9 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 
-#define TARGET_WIFI_SSID "MY_SSID"
-#define TARGET_WIFI_PASS "1234567890"
+#include "wifi_credentials.h"
+#define TARGET_WIFI_SSID WIFI_SSID
+#define TARGET_WIFI_PASS WIFI_PASS
 
 // Convert wifi_reason_code_t to readable string with phase diagnosis
 static const char *get_disconnect_reason_info(uint8_t reason) {
@@ -30,7 +31,7 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
   case WIFI_REASON_AUTH_FAIL:
     return "WIFI_REASON_AUTH_FAIL (1/202) [Phase 2: Auth Rejected / MAC "
            "Filter]";
-  case WIFI_REASON_ASSOC_EXPIRE:
+  case WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY:
     return "WIFI_REASON_ASSOC_EXPIRE (4) [Phase 3: Assoc Timeout / Packet "
            "Loss]";
   case WIFI_REASON_ASSOC_FAIL:
@@ -39,7 +40,7 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
   case WIFI_REASON_ASSOC_TOOMANY:
     return "WIFI_REASON_ASSOC_TOOMANY (5/17) [Phase 3: AP Max Clients "
            "Exceeded]";
-  case WIFI_REASON_NOT_AUTHED:
+  case WIFI_REASON_ASSOC_NOT_AUTHED:
     return "WIFI_REASON_NOT_AUTHED (6) [Phase 3: Assoc Sent Before Auth]";
   case WIFI_REASON_NO_AP_FOUND:
     return "WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]";
