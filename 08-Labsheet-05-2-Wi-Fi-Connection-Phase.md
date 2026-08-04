@@ -368,26 +368,49 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.2.1** | SSID และ Password ถูกต้อง | | | | |
-| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | | | | |
-| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | | | | |
+| **5.2.1** | SSID และ Password ถูกต้อง | SSID และ Password ถูกต้อง | IP_EVENT_STA_GOT_IP | Passed | N/A (0 / 0x00) | เชื่อมต่อสำเร็จ ได้รับ IP Address จาก DHCP
+| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | ระบุ SSID ผิด (ไม่มีในระบบ) | WIFI_EVENT_STA_DISCONNECTED | Failed | 201 / 0xC9  | WIFI_REASON_NO_AP_FOUND (หา AP ไม่พบใน Scan Phase)
+| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | ระบุ SSID ถูกต้อง แต่ Password ผิด | WIFI_EVENT_STA_DISCONNECTED | Failed | 15 / 0x0F (หรือ 204) | WIFI_REASON_HANDSHAKE_TIMEOUT / 4WAY_HANDSHAKE_TIMEOUT
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
 | พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **SSID** | Mitsuren |
+| **BSSID (MAC Address)** | 06:96:98:A0:C9:FF |
+| **Channel** | 11 |
+| **IP Address** | 192.168.33.203 |
+| **Subnet Mask** | 255.255.255.0 |
+| **Default Gateway** | 192.168.33.149 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
+
+ตอบ ก่อนที่ ESP32 จะส่งแพ็กเกจขอเชื่อมต่อ (Auth/Assoc) ตัว Wi-Fi Driver จะต้องทำกระบวนการ Probe Scan ใน Phase 1 เพื่อค้นหาว่ามี Access Point (AP) ที่ปล่อย Broadcast SSID ตรงตามที่ตั้งไว้ใน wifi_config_t หรือไม่ เมื่อไม่พบ AP ที่มีชื่อตรงกันในทุกช่องความถี่ (Channel 1-13) ระบบจะตัดการทำงานทันทีโดยไม่ออกแพ็กเกจ Authentication และแจ้งเตือนผ่าน Event Disconnected ด้วยรหัส 201 (WIFI_REASON_NO_AP_FOUND)
+
 2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
+
+ตอบ ในมาตรฐาน IEEE 802.11i (WPA2-PSK) ขั้นตอน Authentication (เฟส 2) และ Association (เฟส 3) เป็นเพียงการแลกเปลี่ยนสถานะเปิดความสัมพันธ์ระดับ Open System / Capability Negotiation โดย ยังไม่มีการส่งหรือตรวจเช็กรหัสผ่าน (Pre-Shared Key - PSK)
+
+รหัสผ่านจะถูกนำมาคำนวณสร้าง PTK (Pairwise Transient Key) ใน เฟส 4 (4-Way Handshake) เมื่อ Password ผิด จะทำให้การยืนยัน MIC (Message Integrity Code) ในการแลกเปลี่ยน Key ล้มเหลว AP หรือ Station จึงปฏิเสธการสถาปนาคีย์และเกิด Timeout หลุดการเชื่อมต่อด้วยรหัส 15 (HANDSHAKE_TIMEOUT) หรือ 204 (4WAY_HANDSHAKE_TIMEOUT)
+
 3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
+
+ตอบ Event ที่เกิดขึ้นก่อน: WIFI_EVENT_STA_CONNECTED เกิดขึ้นก่อน (สังเกตจาก Log เกิดที่เวลา ~2,456 ms ส่วน GOT_IP เกิดตามมาที่ ~3,506 ms)
+
+ความแตกต่างทางโครงสร้างเครือข่าย (OSI Model):
+
+WIFI_EVENT_STA_CONNECTED (Layer 2 - Data Link Layer): หมายถึง บอร์ด ESP32 สถาปนาการเชื่อมต่อทางคลื่นวิทยุ ตรวจสอบรหัสผ่าน 4-Way Handshake และผูก MAC Address กับ AP เป้าหมายสำเร็จแล้ว
+
+IP_EVENT_STA_GOT_IP (Layer 3 - Network Layer): เกิดขึ้นตามมาทีหลัง หมายถึง ESP32 สื่อสารผ่านโปรโตคอล DHCP กับเราเตอร์เพื่อขอรับหมายเลข IP Address, Subnet Mask และ Default Gateway สำเร็จ ทำให้บอร์ดพร้อมสำหรับการสื่อสารผ่านโปรโตคอล TCP/IP (เช่น HTTP, MQTT, Socket)
+
 4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+
+ตอบ ตัวแปร reason ช่วยให้โปรแกรมเมอร์สามารถสร้าง Decision Logic (ตรรกะการตัดสินใจ) เพื่อจัดการกับเหตุการณ์หลุดเชื่อมต่อได้อย่างถูกต้อง ไม่หลูป Reconnect แบบสุ่มสี่สุ่มห้า เช่น:
+
+ถ้าได้ WIFI_REASON_NO_AP_FOUND (201) หรือ BEACON_TIMEOUT (200): เกิดจาก AP ปิดอยู่หรือบอร์ดอยู่นอกระยะสัญญาณ ควรตั้งเวลาหน่วง (Delay / Exponential Backoff) แล้วค่อยสั่ง esp_wifi_connect() เพื่อลองใหม่
+
+ถ้าได้ WIFI_REASON_AUTH_FAIL (202) หรือ HANDSHAKE_TIMEOUT (15): แสดงว่า Password ผิด การสั่ง Reconnect ซ้ำด้วยรหัสเดิมจะล้มเหลวเสมอ ระบบควรหยุดเชื่อมต่อและแจ้งเตือน Error หรือสลับเข้าสู่โหมด AP Provisioning เพื่อเปิดให้ผู้ใช้งานกรอกรหัสผ่านใหม่
