@@ -1,0 +1,8 @@
+Command: ninja all
+[1/4] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\Advice03\Week-05-Wi-Fi-ESP32\Example_Codes\Lab5-2-Wi-Fi-Phase2\build\esp-idf\esptool_py && C:\Users\Advice03\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:/Users/Advice03/esp/v5.5.1/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/Advice03/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/build/partition_table/partition-table.bin C:/Users/Advice03/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/build/wifi_connection_phase.bin"
+wifi_connection_phase.bin binary size 0xbbdc0 bytes. Smallest app partition is 0x100000 bytes. 0x44240 bytes (27%) free.
+[2/4] Performing build step for 'bootloader'
+[1/1] C:\WINDOWS\system32\cmd.exe /C "cd /D C:\Users\Advice03\Week-05-Wi-Fi-ESP32\Example_Codes\Lab5-2-Wi-Fi-Phase2\build\bootloader\esp-idf\esptool_py && C:\Users\Advice03\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:/Users/Advice03/esp/v5.5.1/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x1000 C:/Users/Advice03/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/build/bootloader/bootloader.bin"
+Bootloader binary size 0x6680 bytes. 0x980 bytes (8%) free.
+[3/4] No install step for 'bootloader'
+[4/4] Completed 'bootloader'
