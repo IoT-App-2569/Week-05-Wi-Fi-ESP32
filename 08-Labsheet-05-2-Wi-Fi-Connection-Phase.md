@@ -388,6 +388,18 @@ void app_main(void) {
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
+```
+เพราะ SSID ไม่ตรงกับ Access Point ที่มีอยู่ จึงไม่พบเครือข่ายในขั้น Scan และเกิด Reason Code 201 (WIFI_REASON_NO_AP_FOUND)
+```
 2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
+```
+เพราะผ่านการเชื่อมต่อระดับ Authentication และ Association ได้ แต่รหัสผ่านผิดทำให้ 4-Way Handshake สร้างคีย์ไม่ตรงกัน จึงเชื่อมต่อไม่สำเร็จ
+```
 3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
+```
+WIFI_EVENT_STA_CONNECTED เกิดก่อน แสดงว่าเชื่อมต่อ Wi-Fi สำเร็จ ส่วน IP_EVENT_STA_GOT_IP เกิดภายหลังเมื่อได้รับ IP Address จาก DHCP
+```
 4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+```
+ตัวแปร reason ช่วยบอกสาเหตุที่ตัดการเชื่อมต่อ ทำให้ระบบสามารถวิเคราะห์ปัญหาและเลือกวิธีเชื่อมต่อใหม่ (Auto-Reconnect) ได้อย่างเหมาะสม เช่น SSID ไม่พบ รหัสผ่านผิด หรือสัญญาณหลุด
+```
