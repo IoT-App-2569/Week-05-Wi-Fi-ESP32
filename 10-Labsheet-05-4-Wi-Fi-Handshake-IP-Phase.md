@@ -330,22 +330,34 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| **5.4.1** | Password ถูกต้อง |เกิด (Passed) |เกิด (Passed) |TEST PASSED |- |
+| **5.4.2** | Password ผิด |เกิด (แต่ถูกตัดการเชื่อมต่อ) |ไม่เกิด (Failed) |TEST FAILED |2 (WIFI_REASON_HANDSHAKE_TIMEOUT) |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
 | :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **IP Address** |172.20.10.3 |
+| **Subnet Mask** |255.255.255.240 |
+| **Default Gateway** | 172.20.10.1|
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+```
+WPA2 ใช้การคำนวณคีย์ร่วมกัน (PMK และ PTK) เพื่อยืนยันรหัสผ่าน จึงไม่ต้องส่งรหัสผ่านจริงผ่านเครือข่าย
+```
 2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+```
+PMK เป็นคีย์หลักที่สร้างจากรหัสผ่าน ส่วน PTK สร้างจาก PMK และใช้เข้ารหัสข้อมูลระหว่างการสื่อสาร
+```
 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
+```
+WIFI_EVENT_STA_CONNECTED เกิดหลังผ่าน Authentication และ Association แล้ว แต่เมื่อรหัสผ่านผิด การตรวจสอบใน 4-Way Handshake ล้มเหลว จึงเกิด WIFI_EVENT_STA_DISCONNECTED
+```
 4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+```
+การเชื่อมต่อจะหยุดหลัง Phase 4 (4-Way Handshake) และจะไม่เกิด Event IP_EVENT_STA_GOT_IP เพราะไม่มี DHCP แจก IP Address.
+```
