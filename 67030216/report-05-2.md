@@ -119,7 +119,7 @@ I (1164) wifi:new:<1,0>, old:<1,0>, ap:<255,255>, sta:<1,0>, prof:1, snd_ch_cfg:
 I (1164) wifi:state: init -> auth (0xb0)
 I (1174) wifi:state: auth -> assoc (0x0)
 I (1184) wifi:state: assoc -> run (0x10)
-I (1274) wifi:connected with IG:_cxii_hdrr, aid = 1, channel 1, BW20, bssid = de:f7:ed:c6:b6:23
+I (1274) wifi:connected with IG:PK_2302, aid = 1, channel 1, BW20, bssid = de:f7:ed:c6:b6:23
 I (1274) wifi:security: WPA2-PSK, phy: bgn, rssi: -50
 I (1284) wifi:pm start, type: 1
 
