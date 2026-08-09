@@ -57,4 +57,10 @@ sequenceDiagram
 ## 4. คำถามทบทวนความเข้าใจ (Checkpoints)
 
 1. **Association ID (AID)** คืออะไร และมีประโยชน์อย่างไรต่อ Access Point ในการจัดการอุปกรณ์ไร้สาย?
+**Association ID (AID) และประโยชน์ต่อ AP**
+- **คืออะไร:** AID คือหมายเลขประจำตัวแบบดิจิทัล (Value ช่วง 1–2007) ที่ AP มอบให้แก่ Station (ESP32) แต่ละเครื่องหลังจากผูกสัมพันธ์สำเร็จ
+- **ประโยชน์:** ช่วยให้ AP สามารถระบุและจำแนกอุปกรณ์ลูกข่ายแต่ละเครื่องได้อย่างรวดเร็วในระดับ MAC Layer ใช้จัดการบัฟเฟอร์ข้อมูล (Data Buffering) และควบคุมโหมดประหยัดพลังงาน (Power Save Mode) โดยส่งสัญญาณเตือนผ่าน `Traffic Indication Map (TIM)` ใน Beacon Frame เพื่อแจ้งอุปกรณ์เฉพาะ AID นั้นๆ ให้ตื่นขึ้นมารับข้อมูล
 2. หาก Router รองรับอุปกรณ์ได้สูงสุด 32 เครื่อง และ ESP32 เป็นเครื่องที่ 33 พยายามจะเชื่อมต่อ จะเกิดเหตุการณ์ใดขึ้นใน Association Phase?
+- **เหตุการณ์ที่เกิดขึ้น:** AP จะส่งแพ็กเกจ `Association Response` กลับมาแต่ระบุสถานะปฏิเสธ (Failure)
+- **Event:** `WIFI_EVENT_STA_DISCONNECTED`
+- **Reason Code:** `WIFI_REASON_ASSOC_TOOMANY` (Value `17`) หรืออาจเป็น `WIFI_REASON_ASSOC_FAIL` (Value `3`) ขึ้นอยู่กับการลงรหัสตอบกลับของ AP นั้นๆ
