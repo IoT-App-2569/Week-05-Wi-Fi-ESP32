@@ -238,11 +238,11 @@ I (7464) main_task: Returned from app_main()
 
 1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
 ```c
-เมื่อ ESP32 ระบุ SSID ที่ไม่มีอยู่จริง ระบบจะไม่สามารถค้นหา Access Point ที่ตรงกับ SSID ที่กำหนดได้ จึงไม่สามารถเชื่อมต่อกับ AP ต่อไปได้ และเกิด WIFI_EVENT_STA_DISCONNECTED ขึ้น จากผลการทดลองครั้งนี้พบ Reason Code เป็น 8 (0x08) : OTHER_DISCONNECT_REASON ซึ่งเป็นเหตุผลที่ระบบรายงานจากการยกเลิกหรือหลุดจากกระบวนการเชื่อมต่อ โดยกรณีนี้เกิดจากการระบุ SSID ที่ไม่มีอยู่ในระบบ
+เมื่อ ESP32 ระบุ SSID ที่ไม่มีอยู่จริง ระบบจะไม่สามารถค้นหา Access Point ที่ตรงกับ SSID ที่กำหนดได้ จึงไม่สามารถดำเนินการเชื่อมต่อกับ AP ต่อไปได้และเกิด WIFI_EVENT_STA_DISCONNECTED ขึ้น อย่างไรก็ตาม จากผลการทดลองจริงใน Serial Console พบ Reason Code เป็น 8 (0x08) : OTHER_DISCONNECT_REASON ไม่ใช่ 201 (WIFI_REASON_NO_AP_FOUND) ตามที่ระบุในคำถาม ดังนั้นคำตอบควรอ้างอิงจากผลการทดลองจริงว่า ในการทดลองครั้งนี้ ESP32 รายงานการ Disconnect ด้วย Reason Code 8 เนื่องจากมีการระบุ SSID ที่ไม่มีอยู่ในระบบ
 ```
 2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
 ```c
-เนื่องจาก SSID ที่ระบุถูกต้อง ทำให้ ESP32 สามารถค้นหา Access Point และเริ่มกระบวนการเชื่อมต่อได้ จึงเห็นใน Log ว่าสถานะเปลี่ยนจาก init -> auth -> assoc -> run แต่เมื่อใช้ Password ที่ไม่ถูกต้อง การยืนยันตัวตนสำหรับเครือข่าย WPA2-PSK ไม่สามารถดำเนินการให้สำเร็จได้ สุดท้ายจึงเกิด WIFI_EVENT_STA_DISCONNECTED โดยจากผลการทดลองพบ Reason Code เป็น 2 (0x02) : WIFI_REASON_AUTH_EXPIRE แสดงว่ากระบวนการ Authentication ไม่สามารถดำเนินการให้สำเร็จภายในเวลาที่กำหนด
+เนื่องจาก SSID ที่ระบุถูกต้อง ทำให้ ESP32 สามารถค้นหา Access Point และเริ่มกระบวนการเชื่อมต่อได้ โดยจาก Log พบว่าสถานะเปลี่ยนจาก init -> auth -> assoc -> run แต่เมื่อใช้ Password ที่ไม่ถูกต้อง การยืนยันตัวตนสำหรับเครือข่าย WPA2-PSK ไม่สามารถดำเนินการให้สำเร็จได้ จึงเกิด WIFI_EVENT_STA_DISCONNECTED ขึ้น อย่างไรก็ตาม จากผลการทดลองจริงพบ Reason Code เป็น 2 (0x02) : WIFI_REASON_AUTH_EXPIRE ไม่ใช่ Reason Code 15 หรือ 204 ตามที่ระบุในคำถาม โดยแสดงว่ากระบวนการ Authentication ไม่สามารถดำเนินการให้สำเร็จภายในเวลาที่กำหนด
 ```
 3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
 ```c
