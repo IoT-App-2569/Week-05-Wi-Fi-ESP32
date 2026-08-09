@@ -318,26 +318,30 @@ void app_main(void) {
 
 ### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองในระดับ Link Layer
 
-| ข้อการทดลอง | สถานการณ์ทดสอบ | Event ที่ได้รับ | ผลการผูกสัมพันธ์ Link Layer | ค่า Association ID (AID) ที่ได้ | Reason Code (ถ้ามี) |
-| :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง | | | | |
-| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง | | | | |
+| ข้อการทดลอง | สถานการณ์ทดสอบ                           |       Event ที่ได้รับ       | ผลการผูกสัมพันธ์ Link Layer | ค่า Association ID (AID) ที่ได้ | Reason Code (ถ้ามี)                  |
+| :---------: | :--------------------------------------- | :-------------------------: | :-------------------------: | :-----------------------------: | :----------------------------------- |
+|  **5.3.1**  | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง    |  WIFI_EVENT_STA_CONNECTED   |       สำเร็จ (Passed)       |                2                | -                                    |
+|  **5.3.2**  | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง | WIFI_EVENT_STA_DISCONNECTED |      ล้มเหลว (Failed)       |                -                | 201 / 0xC9 (WIFI_REASON_NO_AP_FOUND) |
 
 ### 6.2 บันทึกข้อมูล Link Layer จาก Event `WIFI_EVENT_STA_CONNECTED` (ข้อ 5.3.1)
 
-| พารามิเตอร์ Link Layer | ค่าที่อ่านได้จริงจาก Forensic Log |
-| :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **Auth Mode Enum** | |
-| **Association ID (AID)** | |
+| พารามิเตอร์ Link Layer   | ค่าที่อ่านได้จริงจาก Forensic Log |
+| :----------------------- | :-------------------------------- |
+| **SSID**                 | songpod_2.4G                      |
+| **BSSID (MAC Address)**  | 90:FD:73:B4:F8:85                 |
+| **Channel**              | 5                                 |
+| **Auth Mode Enum**       | 3                                 |
+| **Association ID (AID)** | 2                                 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. **Association ID (AID)** คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?
+ตอบ  AID คือหมายเลขประจำตัวที่ AP กำหนดให้ Station เมื่อเชื่อมต่อสำเร็จ ใช้ระบุตัวตนและจัดการคิวรับส่งข้อมูล โดยค่าจะถูกเก็บในตัวแปร `aid` ของโครงสร้าง `wifi_event_sta_connected_t`
 2. เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event `WIFI_EVENT_STA_CONNECTED` ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?
+ตอบ เพราะ WPA2-PSK ใช้ Open System Authentication ใน Phase 2 ซึ่งอนุญาตให้เชื่อมต่อระดับกายภาพได้ทันทีโดยยังไม่เช็ครหัสผ่าน การตรวจสอบรหัสผ่านจริงจะไปทำภายหลังในเฟส 4-Way Handshake
 3. หาก Router มีการตั้งค่า **MAC Address Filtering** (อนุญาตเฉพาะ MAC ที่ลงทะเบียน) ESP32 จะล้มเหลวในเฟสใด และจะส่ง Disconnect Reason Code ใดออกมา?
+ตอบ จะล้มเหลวใน Phase 2 (Authentication) และจะได้ Reason Code เป็น 1 (`WIFI_REASON_UNSPECIFIED`) หรือ 202 (`WIFI_REASON_AUTH_FAIL`)
 4. สรุปความแตกต่างสำคัญระหว่างจุดสิ้นสุดของ **Phase 3 (Link-Layer Connected)** กับจุดสิ้นสุดของ **Phase 5 (IP Address Assigned)**
+ตอบ สิ้นสุด Phase 3 คือเชื่อมต่อสัญญาณวิทยุสำเร็จ (Layer 2) แต่ยังออกเน็ตไม่ได้ ส่วนสิ้นสุด Phase 5 คือได้รับ IP Address (Layer 3) และพร้อมสื่อสารผ่านอินเทอร์เน็ตได้อย่างสมบูรณ์
