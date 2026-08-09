@@ -105,11 +105,11 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 ## 4. คำถามทบทวนความเข้าใจ (Checkpoints)
 
 1. เหตุใดการเกิด Event `WIFI_EVENT_STA_CONNECTED` จึงยัง**ไม่เพียงพอ**ที่จะเริ่มส่งข้อมูลไปยังเว็บเซิร์ฟเวอร์ภายนอกได้?
-**ยังไม่มี IP Address (Layer 3):** `WIFI_EVENT_STA_CONNECTED` ยืนยันเพียงว่าการเชื่อมต่อในระดับ Link Layer (Layer 2 / IEEE 802.11) และการยืนยันรหัสผ่านสำเร็จแล้วเท่านั้น แต่ ESP32 ยังไม่มี IP Address, Subnet Mask และ Gateway สำหรับการส่งข้อมูลบนโปรโตคอล TCP/IP ต้องรอให้เฟส DHCP ทำงานสำเร็จและเกิด Event `IP_EVENT_STA_GOT_IP` ก่อน
+	**ยังไม่มี IP Address (Layer 3):** `WIFI_EVENT_STA_CONNECTED` ยืนยันเพียงว่าการเชื่อมต่อในระดับ Link Layer (Layer 2 / IEEE 802.11) และการยืนยันรหัสผ่านสำเร็จแล้วเท่านั้น แต่ ESP32 ยังไม่มี IP Address, Subnet Mask และ Gateway สำหรับการส่งข้อมูลบนโปรโตคอล TCP/IP ต้องรอให้เฟส DHCP ทำงานสำเร็จและเกิด Event `IP_EVENT_STA_GOT_IP` ก่อน
 2. หากพิมพ์รหัสผ่าน Wi-Fi ผิด กระบวนการเชื่อมต่อจะหลุดและแจ้ง Error ในเฟสใด?
-**เฟสที่ 4: Four-way Handshake Phase:** หากพิมพ์รหัสผิด การสร้างคีย์สื่อสาร (PMK/PTK) จะไม่ตรงกับ AP ส่งผลให้การแลกเปลี่ยนคีย์ EAPOL ไม่สำเร็จ และจะถูกตัดการเชื่อมต่อพร้อมแจ้ง Reason Code เช่น `WIFI_REASON_HANDSHAKE_TIMEOUT`
+	**เฟสที่ 4: Four-way Handshake Phase:** หากพิมพ์รหัสผิด การสร้างคีย์สื่อสาร (PMK/PTK) จะไม่ตรงกับ AP ส่งผลให้การแลกเปลี่ยนคีย์ EAPOL ไม่สำเร็จ และจะถูกตัดการเชื่อมต่อพร้อมแจ้ง Reason Code เช่น `WIFI_REASON_HANDSHAKE_TIMEOUT`
 3. ระบบ Event Loop มีข้อดีอย่างไรเมื่อเทียบกับการเขียนโค้ดแบบวนลูปเช็กสถานะ (Polling loop)?
-ข้อดีของ Event Loop:
+	ข้อดีของ Event Loop:
 - **ไม่บล็อกการทำงาน (Non-blocking / Asynchronous):** CPU ไม่ต้องเสียรอบการทำงาน (Clock cycles) ไปกับการวนลูปคอยเช็กสถานะ ทำให้สามารถแบ่งกำลังไปประมวลผล Task อื่นๆ ได้
     
 - **ตอบสนองทันที (Event-driven):** เมื่อสถานะเครือข่ายเปลี่ยนแปลง ระบบจะเรียก Handler มาทำงานทันทีโดยไม่ต้องรอรอบการวนลูป
