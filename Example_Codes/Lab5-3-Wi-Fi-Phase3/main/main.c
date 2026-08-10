@@ -17,8 +17,8 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 
-#define TARGET_WIFI_SSID "MY_SSID"
-#define TARGET_WIFI_PASS "1234567890"
+#define TARGET_WIFI_SSID "Cs.WiFi"
+#define TARGET_WIFI_PASS "13112548"
 
 // Convert wifi_reason_code_t to readable string with phase diagnosis
 static const char *get_disconnect_reason_info(uint8_t reason) {
@@ -30,24 +30,28 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
   case WIFI_REASON_AUTH_FAIL:
     return "WIFI_REASON_AUTH_FAIL (1/202) [Phase 2: Auth Rejected / MAC "
            "Filter]";
-  case WIFI_REASON_ASSOC_EXPIRE:
-    return "WIFI_REASON_ASSOC_EXPIRE (4) [Phase 3: Assoc Timeout / Packet "
-           "Loss]";
+  case WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY:
+    return "WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY (4) [Phase 3: Assoc "
+           "Timeout / Packet Loss]";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (3/203) [Phase 3: Assoc Rejected / "
            "Mismatch]";
   case WIFI_REASON_ASSOC_TOOMANY:
     return "WIFI_REASON_ASSOC_TOOMANY (5/17) [Phase 3: AP Max Clients "
            "Exceeded]";
-  case WIFI_REASON_NOT_AUTHED:
-    return "WIFI_REASON_NOT_AUTHED (6) [Phase 3: Assoc Sent Before Auth]";
+  case WIFI_REASON_CLASS2_FRAME_FROM_NONAUTH_STA:
+    return "WIFI_REASON_CLASS2_FRAME_FROM_NONAUTH_STA (6) [Phase 3: "
+           "Assoc Sent Before Auth]";
+  case WIFI_REASON_ASSOC_NOT_AUTHED:
+    return "WIFI_REASON_ASSOC_NOT_AUTHED (9) [Phase 3: Association but "
+           "not Authenticated]";
   case WIFI_REASON_NO_AP_FOUND:
     return "WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]";
-  case WIFI_REASON_HANDSHAKE_TIMEOUT:
-    return "WIFI_REASON_HANDSHAKE_TIMEOUT (15) [Phase 4: 4-Way Handshake "
-           "Timeout]";
   case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
-    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204) [Phase 4: Wrong Password]";
+    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (15) [Phase 4: 4-Way "
+           "Handshake Timeout]";
+  case WIFI_REASON_HANDSHAKE_TIMEOUT:
+    return "WIFI_REASON_HANDSHAKE_TIMEOUT (204) [Phase 4: Wrong Password]";
   default:
     return "OTHER_DISCONNECT_REASON";
   }
@@ -122,8 +126,6 @@ static void test_auth_assoc_phase(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "  Target SSID    : \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
   wifi_config_t wifi_config = {
       .sta =
           {
@@ -137,12 +139,23 @@ static void test_auth_assoc_phase(const char *test_title, const char *ssid,
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
+  // esp_wifi_stop() itself can fire a stale WIFI_EVENT_STA_DISCONNECTED
+  // (from the *previous* AP). Do NOT clear bits before this point, or that
+  // stale event may land after the clear and be mistaken for the result
+  // of the upcoming test.
 
   ESP_LOGI(TAG,
            "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
   esp_err_t err_cfg = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
   ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_set_config() returned %s (0x%x)",
            esp_err_to_name(err_cfg), err_cfg);
+
+  // FIX: clear the event bits right before esp_wifi_start(), i.e. right
+  // before the NEW connection attempt begins. This discards any stale
+  // CONNECTED/FAIL bit left over from esp_wifi_stop() above, so the bits
+  // xEventGroupWaitBits() sees below can only have been set by THIS test's
+  // esp_wifi_connect() call.
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_start()");
   esp_err_t err_start = esp_wifi_start();
@@ -151,7 +164,7 @@ static void test_auth_assoc_phase(const char *test_title, const char *ssid,
 
   EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
                                          WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
-                                         pdFALSE, pdFALSE, pdMS_TO_TICKS(8000));
+                                         pdFALSE, pdFALSE, pdMS_TO_TICKS(12000));
 
   if (bits & WIFI_CONNECTED_BIT) {
     ESP_LOGI(

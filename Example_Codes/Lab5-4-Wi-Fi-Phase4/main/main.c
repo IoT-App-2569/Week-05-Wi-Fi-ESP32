@@ -17,8 +17,8 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
-#define TARGET_WIFI_SSID   "S24 Ultra Koson"
-#define TARGET_WIFI_PASS   "1234567890"
+#define TARGET_WIFI_SSID   "Cs.WiFi"
+#define TARGET_WIFI_PASS   "13112548"
 
 static const char *get_disconnect_reason_info(uint8_t reason) {
   switch (reason) {
@@ -28,14 +28,14 @@ static const char *get_disconnect_reason_info(uint8_t reason) {
     return "WIFI_REASON_AUTH_EXPIRE (2)";
   case WIFI_REASON_AUTH_FAIL:
     return "WIFI_REASON_AUTH_FAIL (1/202)";
-  case WIFI_REASON_ASSOC_EXPIRE:
-    return "WIFI_REASON_ASSOC_EXPIRE (4)";
+  case WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY:
+    return "WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY (4)";
   case WIFI_REASON_ASSOC_FAIL:
     return "WIFI_REASON_ASSOC_FAIL (3/203)";
-  case WIFI_REASON_HANDSHAKE_TIMEOUT:
-    return "WIFI_REASON_HANDSHAKE_TIMEOUT (15) [Phase 4: MIC mismatch / EAPOL timeout]";
   case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
-    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204) [Phase 4: Wrong Password]";
+    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (15) [Phase 4: MIC mismatch / EAPOL timeout]";
+  case WIFI_REASON_HANDSHAKE_TIMEOUT:
+    return "WIFI_REASON_HANDSHAKE_TIMEOUT (204) [Phase 4: Wrong Password]";
   case WIFI_REASON_NO_AP_FOUND:
     return "WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]";
   case WIFI_REASON_BEACON_TIMEOUT:
@@ -117,11 +117,15 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "  Target SSID    : \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
   wifi_config_t wifi_config = {
       .sta = {
-          .threshold.authmode = WIFI_AUTH_WPA2_PSK,
+          // FIX (v3): sae_pwe_h2e explicitly set was the actual problem --
+          // removing it and matching Lab 5.3's exact working config (just
+          // WIFI_AUTH_OPEN, sae_pwe_h2e left at its default/unset) is what
+          // connects successfully to this WPA3-SAE AP. The driver's
+          // auto-upgrade from OPEN to WPA2 threshold (seen in the log
+          // warning below) is normal and does not block the connection.
+          .threshold.authmode = WIFI_AUTH_OPEN,
       },
   };
   strncpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
@@ -130,11 +134,16 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
+  // esp_wifi_stop() can itself fire a stale WIFI_EVENT_STA_DISCONNECTED
+  // from the previous AP. Bits are cleared right before esp_wifi_start()
+  // below so that stale event can't be mistaken for this test's result.
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
   esp_err_t err_cfg = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
   ESP_LOGI(TAG, "[FORENSIC]: esp_wifi_set_config() returned %s (0x%x)",
            esp_err_to_name(err_cfg), err_cfg);
+
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_start()");
   esp_err_t err_start = esp_wifi_start();
