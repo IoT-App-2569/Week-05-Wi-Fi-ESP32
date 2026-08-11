@@ -320,18 +320,18 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event ที่ได้รับ | ผลการผูกสัมพันธ์ Link Layer | ค่า Association ID (AID) ที่ได้ | Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง | | | | |
-| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง | | | | |
+| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง |WIFI_EVENT_STA_CONNECTED | สำเร็จ|3 | -|
+| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง |WIFI_EVENT_STA_DISCONNECTED |ล้มเหลว     |- |201 |
 
 ### 6.2 บันทึกข้อมูล Link Layer จาก Event `WIFI_EVENT_STA_CONNECTED` (ข้อ 5.3.1)
 
 | พารามิเตอร์ Link Layer | ค่าที่อ่านได้จริงจาก Forensic Log |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **Auth Mode Enum** | |
-| **Association ID (AID)** | |
+| **SSID** | Yukho|
+| **BSSID (MAC Address)** |A6:42:3B:3E:FA:E1 |
+| **Channel** | 6|
+| **Auth Mode Enum** | 3 (หมายถึง WPA2-PSK)|
+| **Association ID (AID)** | 3|
 
 ---
 
