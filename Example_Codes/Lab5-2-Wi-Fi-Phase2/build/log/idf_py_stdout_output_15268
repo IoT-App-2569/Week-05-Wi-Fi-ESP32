@@ -1,0 +1,198 @@
+Command: C:\Users\Advice03\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:\Users\Advice03\esp\v5.5.1\esp-idf\tools/idf_monitor.py -p COM3 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 C:\Users\Advice03\Week-05-Wi-Fi-ESP32\Example_Codes\Lab5-2-Wi-Fi-Phase2\build\wifi_connection_phase.elf C:\Users\Advice03\Week-05-Wi-Fi-ESP32\Example_Codes\Lab5-2-Wi-Fi-Phase2\build\bootloader\bootloader.elf --force-color -m 'C:\Users\Advice03\.espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe' 'C:\Users\Advice03\esp\v5.5.1\esp-idf\tools\idf.py'
+x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPI�ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:6380
+ho 0 tail 12 room 4
+load:0x40078000,len:15916
+load:0x40080400,len:3860
+entry 0x40080638
+[0;32mI (29) boot: ESP-IDF v5.5.1 2nd stage bootloader[0m
+[0;32mI (29) boot: compile time Aug  4 2026 11:22:16[0m
+[0;32mI (29) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v3.1[0m
+[0;32mI (33) boot.esp32: SPI Speed      : 40MHz[0m
+[0;32mI (37) boot.esp32: SPI Mode       : DIO[0m
+[0;32mI (41) boot.esp32: SPI Flash Size : 2MB[0m
+[0;32mI (44) boot: Enabling RNG early entropy source...[0m
+[0;32mI (49) boot: Partition Table:[0m
+[0;32mI (51) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (58) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (64) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (71) boot:  2 factory          factory app      00 00 00010000 00100000[0m
+[0;32mI (77) boot: End of partition table[0m
+[0;32mI (81) esp_image: segment 0: paddr=00010020 vaddr=3f400020 size=19e38h (106040) map[0m
+[0;32mI (124) esp_image: segment 1: paddr=00029e60 vaddr=3ffb0000 size=03eech ( 16108) load[0m
+[0;32mI (130) esp_image: segment 2: paddr=0002dd54 vaddr=40080000 size=022c4h (  8900) load[0m
+[0;32mI (134) esp_image: segment 3: paddr=00030020 vaddr=400d0020 size=861fch (549372) map[0m
+[0;32mI (323) esp_image: segment 4: paddr=000b6224 vaddr=400822c4 size=15b48h ( 88904) load[0m
+[0;32mI (358) esp_image: segment 5: paddr=000cbd74 vaddr=50000000 size=00020h (    32) load[0m
+[0;32mI (370) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (370) boot: Disabling RNG early entropy source...[0m
+[0;32mI (381) cpu_start: Multicore app[0m
+[0;32mI (389) cpu_start: Pro cpu start user code[0m
+[0;32mI (389) cpu_start: cpu freq: 160000000 Hz[0m
+[0;32mI (389) app_init: Application information:[0m
+[0;32mI (389) app_init: Project name:     wifi_connection_phase[0m
+[0;32mI (394) app_init: App version:      37de524-dirty[0m
+[0;32mI (399) app_init: Compile time:     Aug  4 2026 11:20:59[0m
+[0;32mI (404) app_init: ELF file SHA256:  e6b60bb88...[0m
+[0;32mI (408) app_init: ESP-IDF:          v5.5.1[0m
+[0;32mI (412) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (416) efuse_init: Max chip rev:     v3.99 [0m
+[0;32mI (420) efuse_init: Chip rev:         v3.1[0m
+[0;32mI (424) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (430) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM[0m
+[0;32mI (435) heap_init: At 3FFB7FD0 len 00028030 (160 KiB): DRAM[0m
+[0;32mI (440) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM[0m
+[0;32mI (446) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM[0m
+[0;32mI (451) heap_init: At 40097E0C len 000081F4 (32 KiB): IRAM[0m
+[0;33mW (458) spi_flash: Detected boya flash chip but using generic driver. For optimal functionality, enable `SPI_FLASH_SUPPORT_BOYA_CHIP` in menuconfig[0m
+[0;32mI (469) spi_flash: detected chip: generic[0m
+[0;32mI (473) spi_flash: flash io: dio[0m
+[0;33mW (476) spi_flash: Detected size(4096k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;32mI (489) main_task: Started on CPU0[0m
+[0;32mI (499) main_task: Calling app_main()[0m
+[0;32mI (499) LAB_WIFI_CONN: [FORENSIC]: Call nvs_flash_init()[0m
+[0;32mI (519) LAB_WIFI_CONN: [FORENSIC]: nvs_flash_init() returned ESP_OK (0x0)[0m
+[0;32mI (519) LAB_WIFI_CONN: [FORENSIC]: Call esp_netif_init()[0m
+[0;32mI (519) LAB_WIFI_CONN: [FORENSIC]: Call esp_event_loop_create_default()[0m
+[0;32mI (529) LAB_WIFI_CONN: [FORENSIC]: Call esp_netif_create_default_wifi_sta()[0m
+[0;32mI (529) LAB_WIFI_CONN: [FORENSIC]: esp_netif_create_default_wifi_sta() returned 0x3ffbd940[0m
+[0;32mI (539) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_init(&cfg)[0m
+[0;32mI (559) wifi:wifi driver task: 3ffc002c, prio:23, stack:6656, core=0[0m
+[0;32mI (569) wifi:wifi firmware version: 14da9b7[0m
+[0;32mI (569) wifi:wifi certification version: v7.0[0m
+[0;32mI (569) wifi:config NVS flash: enabled[0m
+[0;32mI (569) wifi:config nano formatting: disabled[0m
+[0;32mI (579) wifi:Init data frame dynamic rx buffer num: 32[0m
+[0;32mI (579) wifi:Init static rx mgmt buffer num: 5[0m
+[0;32mI (579) wifi:Init management short buffer num: 32[0m
+[0;32mI (589) wifi:Init dynamic tx buffer num: 32[0m
+[0;32mI (589) wifi:Init static rx buffer size: 1600[0m
+[0;32mI (599) wifi:Init static rx buffer num: 10[0m
+[0;32mI (599) wifi:Init dynamic rx buffer num: 32[0m
+[0;32mI (609) wifi_init: rx ba win: 6[0m
+[0;32mI (609) wifi_init: accept mbox: 6[0m
+[0;32mI (609) wifi_init: tcpip mbox: 32[0m
+[0;32mI (609) wifi_init: udp mbox: 6[0m
+[0;32mI (619) wifi_init: tcp mbox: 6[0m
+[0;32mI (619) wifi_init: tcp tx win: 5760[0m
+[0;32mI (619) wifi_init: tcp rx win: 5760[0m
+[0;32mI (629) wifi_init: tcp mss: 1440[0m
+[0;32mI (629) wifi_init: WiFi IRAM OP enabled[0m
+[0;32mI (629) wifi_init: WiFi RX IRAM OP enabled[0m
+[0;32mI (639) LAB_WIFI_CONN: [FORENSIC]: Call esp_event_handler_instance_register(WIFI_EVENT)[0m
+[0;32mI (639) LAB_WIFI_CONN: [FORENSIC]: Call esp_event_handler_instance_register(IP_EVENT)[0m
+[0;32mI (649) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)[0m
+[0;32mI (659) LAB_WIFI_CONN: ==================================================================[0m
+[0;32mI (669) LAB_WIFI_CONN:   Lab 5.2: Wi-Fi Connection & IP Assignment (ESP-IDF Forensic)[0m
+[0;32mI (669) LAB_WIFI_CONN: ==================================================================[0m
+[0;32mI (679) LAB_WIFI_CONN: [0m
+
+[0;32mI (679) LAB_WIFI_CONN: ------------------------------------------------------------------[0m
+[0;32mI (689) LAB_WIFI_CONN: >>> Experiment 5.2.1: Connection Test - Correct Credentials[0m
+[0;32mI (699) LAB_WIFI_CONN: ------------------------------------------------------------------[0m
+[0;32mI (709) LAB_WIFI_CONN:   Target SSID: "Thanutorn"[0m
+[0;32mI (709) LAB_WIFI_CONN:   Target Password: "norynoey"[0m
+[0;32mI (719) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_stop()[0m
+[0;32mI (719) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)[0m
+[0;32mI (769) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_set_config() returned ESP_OK (0x0)[0m
+[0;32mI (769) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_start()[0m
+[0;32mI (769) phy_init: phy_version 4861,b71b5ad,Aug  5 2025,11:16:06[0m
+[0;32mI (859) wifi:mode : sta (14:08:08:a4:b6:60)[0m
+[0;32mI (859) wifi:enable tsf[0m
+[0;32mI (859) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT ID 43 received[0m
+[0;32mI (859) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)[0m
+[0;32mI (859) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_START received[0m
+[0;32mI (869) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()[0m
+[0;32mI (879) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)[0m
+[0;32mI (1749) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (1759) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (1759) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT ID 43 received[0m
+[0;32mI (1769) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (1779) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (4799) wifi:state: run -> init (0xf00)[0m
+[0;32mI (4809) wifi:new:<6,0>, old:<6,0>, ap:<255,255>, sta:<6,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;33mW (4809) LAB_WIFI_CONN: =======================================================[0m
+[0;33mW (4809) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received![0m
+[0;33mW (4819) LAB_WIFI_CONN:   -> Target SSID          : Thanutorn[0m
+[0;33mW (4819) LAB_WIFI_CONN:   -> Reason Code (Decimal): 15[0m
+[0;33mW (4829) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0x0F[0m
+[0;33mW (4829) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204)[0m
+[0;33mW (4839) LAB_WIFI_CONN: =======================================================[0m
+[0;33mW (4849) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.[0m
+[0;32mI (6859) LAB_WIFI_CONN: [0m
+
+[0;32mI (6859) LAB_WIFI_CONN: ------------------------------------------------------------------[0m
+[0;32mI (6859) LAB_WIFI_CONN: >>> Experiment 5.2.2: Connection Test - Wrong SSID (No AP Found)[0m
+[0;32mI (6859) LAB_WIFI_CONN: ------------------------------------------------------------------[0m
+[0;32mI (6869) LAB_WIFI_CONN:   Target SSID: "NON_EXISTENT_SSID_9999"[0m
+[0;32mI (6879) LAB_WIFI_CONN:   Target Password: "12345678"[0m
+[0;32mI (6879) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_stop()[0m
+[0;32mI (6889) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT ID 3 received[0m
+[0;32mI (6889) wifi:flush txq[0m
+[0;32mI (6889) wifi:stop sw txq[0m
+[0;32mI (6899) wifi:lmac stop hw txq[0m
+[0;32mI (6899) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)[0m
+[0;32mI (6939) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_set_config() returned ESP_OK (0x0)[0m
+[0;32mI (6939) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_start()[0m
+[0;32mI (6949) wifi:mode : sta (14:08:08:a4:b6:60)[0m
+[0;32mI (6949) wifi:enable tsf[0m
+[0;32mI (6949) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT ID 43 received[0m
+[0;32mI (6959) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)[0m
+[0;32mI (6959) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_START received[0m
+[0;32mI (6969) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()[0m
+[0;32mI (6969) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)[0m
+[0;33mW (9389) LAB_WIFI_CONN: =======================================================[0m
+[0;33mW (9389) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received![0m
+[0;33mW (9389) LAB_WIFI_CONN:   -> Target SSID          : NON_EXISTENT_SSID_9999[0m
+[0;33mW (9399) LAB_WIFI_CONN:   -> Reason Code (Decimal): 201[0m
+[0;33mW (9399) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0xC9[0m
+[0;33mW (9409) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_NO_AP_FOUND (201)[0m
+[0;33mW (9409) LAB_WIFI_CONN: =======================================================[0m
+[0;33mW (9419) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.[0m
+[0;32mI (11429) LAB_WIFI_CONN: [0m
+
+[0;32mI (11429) LAB_WIFI_CONN: ------------------------------------------------------------------[0m
+[0;32mI (11429) LAB_WIFI_CONN: >>> Experiment 5.2.3: Connection Test - Wrong Password (Auth/Handshake Fail)[0m
+[0;32mI (11429) LAB_WIFI_CONN: ------------------------------------------------------------------[0m
+[0;32mI (11439) LAB_WIFI_CONN:   Target SSID: "Thanutorn"[0m
+[0;32mI (11449) LAB_WIFI_CONN:   Target Password: "WRONG_PASS_9999"[0m
+[0;32mI (11449) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_stop()[0m
+[0;32mI (11459) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT ID 3 received[0m
+[0;32mI (11459) wifi:flush txq[0m
+[0;32mI (11469) wifi:stop sw txq[0m
+[0;32mI (11469) wifi:lmac stop hw txq[0m
+[0;32mI (11469) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)[0m
+[0;32mI (11569) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_set_config() returned ESP_OK (0x0)[0m
+[0;32mI (11569) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_start()[0m
+[0;32mI (11569) wifi:mode : sta (14:08:08:a4:b6:60)[0m
+[0;32mI (11569) wifi:enable tsf[0m
+[0;32mI (11579) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_START received[0m
+[0;32mI (11579) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()[0m
+[0;32mI (11589) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)[0m
+[0;32mI (11579) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)[0m
+[0;32mI (11859) wifi:new:<6,0>, old:<1,0>, ap:<255,255>, sta:<6,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;32mI (11869) wifi:state: init -> auth (0xb0)[0m
+[0;32mI (11869) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT ID 43 received[0m
+[0;32mI (11869) wifi:state: auth -> assoc (0x0)[0m
+[0;32mI (11889) wifi:state: assoc -> run (0x10)[0m
+[0;32mI (14909) wifi:state: run -> init (0xf00)[0m
+[0;32mI (14919) wifi:new:<6,0>, old:<6,0>, ap:<255,255>, sta:<6,0>, prof:1, snd_ch_cfg:0x0[0m
+[0;33mW (14919) LAB_WIFI_CONN: =======================================================[0m
+[0;33mW (14919) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received![0m
+[0;33mW (14929) LAB_WIFI_CONN:   -> Target SSID          : Thanutorn[0m
+[0;33mW (14929) LAB_WIFI_CONN:   -> Reason Code (Decimal): 15[0m
+[0;33mW (14939) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0x0F[0m
+[0;33mW (14939) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204)[0m
+[0;33mW (14949) LAB_WIFI_CONN: =======================================================[0m
+[0;33mW (14959) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.[0m
+[0;32mI (14969) LAB_WIFI_CONN: ==================================================================[0m
+[0;32mI (14969) LAB_WIFI_CONN:   [Phase 2/3/4/5 Completed: Wi-Fi Connection Lab Finished][0m
+[0;32mI (14979) LAB_WIFI_CONN: ==================================================================[0m
+[0;32mI (14989) main_task: Returned from app_main()[0m
