@@ -330,16 +330,16 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| **5.4.1** | Password ถูกต้อง |เกิด |เกิด |สำเร็จ |- |
+| **5.4.2** | Password ผิด | เกิด (สังเกตจากบรรทัด 4846 และ 4856 ที่ผ่าน Auth/Assoc)| ไม่เกิด|ล้มเหลว |15 (WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
 | :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **IP Address** | 172.20.10.4|
+| **Subnet Mask** | 255.255.255.240    |
+| **Default Gateway** |172.20.10.1 |
 
 ---
 
