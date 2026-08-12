@@ -338,6 +338,23 @@ void app_main(void) {
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. **Association ID (AID)** คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?
+    Association ID (AID) คือหมายเลขประจำตัว (ID) ระดับ Link Layer ที่ Access Point (AP) ออกให้กับเครื่องลูกข่าย (STA) เมื่อการผูกสัมพันธ์สำเร็จ เพื่อใช้ระบุตัวตนของอุปกรณ์ในการสื่อสารและการจัดการพลังงาน (Power Management)
+    
+Phase 3 เป็นดัชนีชี้วัดว่าการเจรจาตกลงคุณสมบัติ (Association) ระหว่าง AP และ STA สำเร็จลุล่วงแล้ว
+
+การส่งคืนข้อมูล จะถูกส่งคืนมาในโครงสร้างข้อมูล wifi_event_sta_connected_t ผ่านตัวแปรชื่อ
 2. เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event `WIFI_EVENT_STA_CONNECTED` ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?
+    ในมาตรฐาน 802.11 การทำ Authentication ระดับ Link Layer (Phase 2) ของ WPA/WPA2 จะทำงานในโหมดที่เรียกว่า "Open System" (ระบบเปิด) ซึ่งอนุญาตให้อุปกรณ์ทุกตัวผ่านด่าน Phase 2 และ 3 (Association) จนเกิด Event WIFI_EVENT_STA_CONNECTED ได้โดยยังไม่มีการตรวจสอบรหัสผ่าน
+
+การตรวจสอบรหัสผ่านที่แท้จริงจะถูกเลื่อนไปทำใน Phase 4 (4-Way Handshake) ดังนั้น หากพิมพ์รหัสผ่านผิด ระบบจะไปล้มเหลว (Disconnect) หลังจาก Phase 3 จบลงไป
+
 3. หาก Router มีการตั้งค่า **MAC Address Filtering** (อนุญาตเฉพาะ MAC ที่ลงทะเบียน) ESP32 จะล้มเหลวในเฟสใด และจะส่ง Disconnect Reason Code ใดออกมา?
+    การเชื่อมต่อจะล้มเหลวใน Phase 2 (Authentication) หรือ Phase 3 (Association) (ขึ้นอยู่กับการออกแบบเฟิร์มแวร์ของเร้าเตอร์แต่ละรุ่น) เนื่องจากเร้าเตอร์จะตรวจสอบ MAC Address ตั้งแต่เฟรมแรกๆ ที่ร้องขอเข้ามาและปฏิเสธทันที
+
+Reason Code ที่พบ มักจะส่งคืนค่าความล้มเหลวเป็น WIFI_REASON_AUTH_FAIL (เช่น Code 1 หรือ 202) หรือ WIFI_REASON_ASSOC_FAIL (เช่น Code 3 หรือ 203)
+
 4. สรุปความแตกต่างสำคัญระหว่างจุดสิ้นสุดของ **Phase 3 (Link-Layer Connected)** กับจุดสิ้นสุดของ **Phase 5 (IP Address Assigned)**
+    จุดสิ้นสุด Phase 3 (WIFI_EVENT_STA_CONNECTED): เป็นการเชื่อมต่อสำเร็จระดับ Data Link Layer (Layer 2) หมายถึงวิทยุของ ESP32 ผูกสัมพันธ์และเกาะสัญญาณคลื่นความถี่กับ Access Point สำเร็จแล้ว แต่ยังไม่สามารถรับส่งข้อมูลอินเทอร์เน็ตได้ เพราะยังไม่มีเลขที่อยู่
+
+จุดสิ้นสุด Phase 5 (IP_EVENT_STA_GOT_IP): เป็นการเชื่อมต่อสำเร็จระดับ Network Layer (Layer 3) หมายถึงระบบ DHCP Client ทำงานเสร็จสิ้น อุปกรณ์ได้รับหมายเลข IP Address, Subnet Mask และ Gateway เรียบร้อยแล้ว ทำให้พร้อมสำหรับการเชื่อมต่อ TCP/IP (เช่น HTTP/MQTT) สู่โลกอินเทอร์เน็ตได้อย่างสมบูรณ์
+   
