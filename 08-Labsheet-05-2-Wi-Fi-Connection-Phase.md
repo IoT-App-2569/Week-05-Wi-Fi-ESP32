@@ -368,26 +368,32 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.2.1** | SSID และ Password ถูกต้อง | | | | |
-| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | | | | |
-| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | | | | |
+| **5.2.1** | SSID และ Password ถูกต้อง |WIFI_EVENT_STA_DISCONNECTED|Failed|201 / 0xC9|WIFI_REASON_NO_AP_FOUND (สแกนไม่พบ AP "ppp" คลื่น 2.4GHz)|
+| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) |WIFI_EVENT_STA_DISCONNECTED|Failed|201 / 0xC9|WIFI_REASON_NO_AP_FOUND (ไม่มี SSID ในระบบ)|
+| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด |WIFI_EVENT_STA_DISCONNECTED|Failed|201 / 0xC9|WIFI_REASON_NO_AP_FOUND (สแกนไม่พบ AP "ppp")|
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
 | พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **SSID** |84:1f:e8:39:c7:b8|
+| **BSSID (MAC Address)** |N/A (ไม่ได้รับ IP)|
+| **Channel** |N/A|
+| **IP Address** |N/A|
+| **Subnet Mask** |201 / 0xC9|
+| **Default Gateway** |FAILED|
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
+    ESP32 จะทำการสแกนหา SSID ในอากาศก่อนเสมอ เมื่อสแกนแล้วไม่พบชื่อ SSID ที่ระบุไว้ในระบบ จึงยกเลิกการเชื่อมต่อทันทีตั้งแต่ขั้นตอนแรกโดยไม่เริ่มเฟส Authentication
 2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
+    เฟส Auth และ Assoc เป็นเพียงการลงทะเบียนยอมรับการเชื่อมต่อระดับ MAC Address (ยังไม่มีการตรวจ Password) แต่จะมาล้มเหลวในเฟส 4-Way Handshake เพราะใช้ Password ผิด ถอดรหัสคีย์ความปลอดภัย (PMK) ไม่ตรงกับ AP
 3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
+    WIFI_EVENT_STA_CONNECTED เกิดก่อน
+    WIFI_EVENT_STA_CONNECTED = Layer 2 (Data Link): เชื่อมต่อทางคลื่นวิทยุระดับ MAC Address สำเร็จ (ยังออกเน็ตไม่ได้)
+    IP_EVENT_STA_GOT_IP = Layer 3 (Network): ได้รับ IP Address จาก DHCP สำเร็จ (พร้อมรับ-ส่งข้อมูลผ่านอินเทอร์เน็ต)
 4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+    ช่วยให้ระบบรู้สาเหตุการหลุดที่แท้จริงเพื่อเลือกวิธีแก้ไขได้ถูกต้อง เช่น หากหลุดชั่วคราว (NO_AP_FOUND / BEACON_TIMEOUT) ให้สั่ง Retry ต่อใหม่อัตโนมัติ แต่ถ้าเกิดจากรหัสผิด (AUTH_FAIL / HANDSHAKE_TIMEOUT) ให้หยุด Retry แล้วสลับ    เข้าโหมดตั้งค่า (Provisioning Mode) ให้ผู้ใช้กรอกรหัสใหม่
