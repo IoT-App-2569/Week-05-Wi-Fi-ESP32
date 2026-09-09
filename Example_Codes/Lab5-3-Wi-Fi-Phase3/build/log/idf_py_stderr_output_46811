@@ -1,0 +1,11 @@
+Command: make -j 12 all
+/Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-3-Wi-Fi-Phase3/main/main.c: In function 'get_disconnect_reason_info':
+/Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-3-Wi-Fi-Phase3/main/main.c:32:8: error: 'WIFI_REASON_DISASSOC_INACTIVITY' undeclared (first use in this function); did you mean 'WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY'?
+   32 |   case WIFI_REASON_DISASSOC_INACTIVITY:
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |        WIFI_REASON_DISASSOC_DUE_TO_INACTIVITY
+/Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-3-Wi-Fi-Phase3/main/main.c:32:8: note: each undeclared identifier is reported only once for each function it appears in
+configdep.c:684: in main: exec_process exited with error code: 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj] Error 1
+make[1]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [all] Error 2

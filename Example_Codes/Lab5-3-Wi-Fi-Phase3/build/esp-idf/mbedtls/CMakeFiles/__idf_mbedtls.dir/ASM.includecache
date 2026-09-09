@@ -1,0 +1,10 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-3-Wi-Fi-Phase3/build/x509_crt_bundle.S
+

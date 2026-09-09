@@ -1,0 +1,2 @@
+source /Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/build/bootloader/gdbinit/symbols
+source /Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/build/bootloader/gdbinit/connect

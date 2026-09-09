@@ -1,0 +1,23 @@
+Command: make -j 12 all
+Configuration Report               
+ ───────────────────────────────── 
+   Parser Version: 1               
+   Verbosity: default              
+   Defaults policy: sdkconfig      
+   Status: Finished successfully   
+                                   
+ ───────────────────────────────── 
+/Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/main/main.c: In function 'get_disconnect_reason_name':
+/Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/main/main.c:34:8: error: 'WIFI_REASON_ASSOC_EXPIRE' undeclared (first use in this function); did you mean 'WIFI_REASON_AUTH_EXPIRE'?
+   34 |   case WIFI_REASON_ASSOC_EXPIRE:
+      |        ^~~~~~~~~~~~~~~~~~~~~~~~
+      |        WIFI_REASON_AUTH_EXPIRE
+/Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/main/main.c:34:8: note: each undeclared identifier is reported only once for each function it appears in
+/Users/beam/Week-05-Wi-Fi-ESP32/Example_Codes/Lab5-2-Wi-Fi-Phase2/main/main.c:38:8: error: 'WIFI_REASON_NOT_AUTHED' undeclared (first use in this function); did you mean 'WIFI_REASON_ASSOC_NOT_AUTHED'?
+   38 |   case WIFI_REASON_NOT_AUTHED:
+      |        ^~~~~~~~~~~~~~~~~~~~~~
+      |        WIFI_REASON_ASSOC_NOT_AUTHED
+configdep.c:684: in main: exec_process exited with error code: 1
+make[2]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj] Error 1
+make[1]: *** [esp-idf/main/CMakeFiles/__idf_main.dir/all] Error 2
+make: *** [all] Error 2

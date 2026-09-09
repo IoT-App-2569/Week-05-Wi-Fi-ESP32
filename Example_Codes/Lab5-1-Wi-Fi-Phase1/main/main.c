@@ -235,6 +235,8 @@ void app_main(void) {
   // ------------------------------------------------------------------
   // 5.1.3 Targeted SSID Scan - Existing
   // ------------------------------------------------------------------
+
+  // 5.1.3 Existing SSID (Using first found SSID from 5.1.1)
   const char *target_exist_ssid =
       (strlen(first_found_ssid) > 0) ? first_found_ssid : "WiFi-Test-Guest";
   snprintf(title_buf, sizeof(title_buf),
