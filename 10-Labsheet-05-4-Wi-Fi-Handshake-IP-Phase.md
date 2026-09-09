@@ -330,22 +330,26 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| **5.4.1** | Password ถูกต้อง |ไม่เกิด|ไม่เกิด|FAILED|201 (0xC9)|
+| **5.4.2** | Password ผิด |ไม่เกิด|ไม่เกิด|FAILED|201 (0xC9)|
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
 | :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **IP Address** |N/A (ไม่ได้รับ IP เนื่องจากค้นหา AP ไม่พบ)|
+| **Subnet Mask** |N/A|
+| **Default Gateway** |N/A|
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+    ทั้งสองฝั่งนำ Passphrase และ SSID มาคำนวณสร้างคีย์ PMK ไว้ล่วงหน้า จากนั้นใน 4-Way Handshake จะส่งเพียงค่าสุ่ม (ANonce/SNonce) มาคำนวณและยืนยันความถูกต้องผ่านค่า MIC หากใช้รหัสผ่านเดียวกัน ค่า MIC จะตรงกันโดยไม่ต้องส่ง Passphrase จริง
 2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+    PMK คือคีย์หลักแม่แบบที่ได้จากการ Hash รหัสผ่าน ส่วน PTK คือคีย์ชั่วคราวที่ได้จากการเอา PMK + ค่าสุ่ม (ANonce/SNonce) + MAC Address มาคำนวณร่วมกัน เพื่อนำ PTK ไปใช้อีกทีในการเข้ารหัส/ถอดรหัสเฟรมข้อมูลจริง
 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
+    เพราะ Event WIFI_EVENT_STA_CONNECTED จะเกิดขึ้นตั้งแต่จบ Phase 3 (Link-Layer) ส่วนการตรวจรหัสผ่านทำใน Phase 4 ซึ่งอยู่ถัดไป เมื่อตรวจสอบผิดใน Phase 4 ระบบจึงค่อยตัดการเชื่อมต่อทีหลัง (หมายเหตุ: ใน Log จริงครั้งนี้หลุดตั้งแต่ Phase 1 เพราะหา AP ไม่พบ)
 4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+    จะผ่าน Phase 4 (4-Way Handshake) สำเร็จ แต่จะไปหยุดและติด Timeout อยู่ที่ Phase 5 (DHCP IP Assignment) และ จะไม่เกิด Event IP_EVENT_STA_GOT_IP

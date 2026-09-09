@@ -17,8 +17,8 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
-#define TARGET_WIFI_SSID   "ppp"
-#define TARGET_WIFI_PASS   "1212312121"
+#define TARGET_WIFI_SSID   ""
+#define TARGET_WIFI_PASS   ""
 
 // Convert wifi_reason_code_t to readable string with phase diagnosis
 static const char *get_disconnect_reason_info(uint8_t reason) {
