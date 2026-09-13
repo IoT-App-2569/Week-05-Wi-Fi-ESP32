@@ -1,13 +1,15 @@
 # ใบงานที่ 5.2: การยืนยันตัวตน การสถาปนาการเชื่อมต่อ และการรับหมายเลข IP Address (Wi-Fi Connection & IP Assignment)
 
 ## 0. กล่าวนำ (Introduction)
-ใบงานนี้เป็นการทดลองต่อเนื่องจากใบงานที่ 5.1 (Scan Phase) เพื่อศึกษาและสังเกตกระบวนการสถาปนาการเชื่อมต่อแบบครบวงจรในเฟสที่ 2 (Authentication), เฟสที่ 3 (Association), เฟสที่ 4 (4-Way Handshake) และเฟสที่ 5 (IP Assignment / DHCP) ผ่านเฟรมเวิร์ก ESP-IDF 
+
+ใบงานนี้เป็นการทดลองต่อเนื่องจากใบงานที่ 5.1 (Scan Phase) เพื่อศึกษาและสังเกตกระบวนการสถาปนาการเชื่อมต่อแบบครบวงจรในเฟสที่ 2 (Authentication), เฟสที่ 3 (Association), เฟสที่ 4 (4-Way Handshake) และเฟสที่ 5 (IP Assignment / DHCP) ผ่านเฟรมเวิร์ก ESP-IDF
 
 นักศึกษาจะได้วิเคราะห์พฤติกรรมของระบบและอ่านค่า Log สไตล์ Forensic เมื่อเกิดเหตุการณ์เชื่อมต่อสำเร็จ (`WIFI_EVENT_STA_CONNECTED`, `IP_EVENT_STA_GOT_IP`) รวมถึงการตรวจสอบและถอดรหัส Disconnect Reason Code (`WIFI_EVENT_STA_DISCONNECTED`) เมื่อเกิดเหตุการณ์เชื่อมต่อล้มเหลว (เช่น SSID ผิด หรือ Password ผิด)
 
 ---
 
 ## 1. วัตถุประสงค์ (Objectives)
+
 1. เรียนรู้กระบวนการเชื่อมต่อ Wi-Fi และการจัดสรรหมายเลข IP Address (DHCP Client) ในโหมด Station (`WIFI_STA`) บน ESP-IDF
 2. เรียนรู้การใช้ Event Loop (`esp_event_handler_instance_register`) และ FreeRTOS Event Group ในการดักจับ Event ของระบบ Wi-Fi และ IP
 3. อ่านและวิเคราะห์โครงสร้างข้อมูล Event ได้แก่ `wifi_event_sta_connected_t`, `wifi_event_sta_disconnected_t` และ `ip_event_got_ip_t`
@@ -16,6 +18,7 @@
 ---
 
 ## 2. อุปกรณ์และซอฟต์แวร์ที่ใช้ในการทดลอง (Equipment & Tools)
+
 1. บอร์ดไมโครคอนโทรลเลอร์ ESP32 (เช่น ESP32 DevKit V1) จำนวน 1 บอร์ด
 2. สายเชื่อมต่อ Micro-USB หรือ USB-C จำนวน 1 เส้น
 3. คอมพิวเตอร์ที่ติดตั้งโปรแกรม IDE เช่น VS Code พร้อมทั้ง ESP-IDF (อาจจะติดตั้งบนเครื่องหรือบน Docker ก็ได้)
@@ -25,6 +28,7 @@
 ## 3. ความรู้พื้นฐานที่เกี่ยวข้อง (Theoretical Background - ESP-IDF Framework)
 
 ### 3.1 สถาปัตยกรรม Event Loop และ Event Handling ใน ESP-IDF
+
 ใน ESP-IDF การทำงานของ Wi-Fi เป็นแบบ Asynchronous (ทำงานเบื้องหลัง) โดย Driver จะส่ง Event ผ่านระบบ **Default Event Loop** เพื่อแจ้งเตือนให้โปรแกรมทราบความคืบหน้า
 
 ```mermaid
@@ -45,6 +49,7 @@ sequenceDiagram
 ### 3.2 โครงสร้างข้อมูล Event สำคัญ (Class Diagrams)
 
 #### 1) โครงสร้างข้อมูล `wifi_event_sta_connected_t`
+
 ส่งมาพร้อมกับ Event `WIFI_EVENT_STA_CONNECTED` เพื่อระบุรายละเอียดของ AP ที่เชื่อมต่อสำเร็จ:
 
 ```mermaid
@@ -60,6 +65,7 @@ classDiagram
 ```
 
 #### 2) โครงสร้างข้อมูล `wifi_event_sta_disconnected_t`
+
 ส่งมาพร้อมกับ Event `WIFI_EVENT_STA_DISCONNECTED` เพื่อระบุสาเหตุของการหลุดการเชื่อมต่อ:
 
 ```mermaid
@@ -74,6 +80,7 @@ classDiagram
 ```
 
 #### 3) โครงสร้างข้อมูล `ip_event_got_ip_t`
+
 ส่งมาพร้อมกับ Event `IP_EVENT_STA_GOT_IP` เมื่อ ESP32 ได้รับหมายเลข IP จาก DHCP Server:
 
 ```mermaid
@@ -93,12 +100,15 @@ classDiagram
 ในใบงานนี้ จะทำการทดสอบการเชื่อมต่อ Wi-Fi ใน 3 สถานการณ์ย่อย เพื่อเปรียบเทียบ Forensic Log และ Disconnect Reason Code:
 
 ### 5.2.1 การเชื่อมต่อด้วย SSID และ Password ที่ถูกต้อง (Success Case)
+
 กำหนดค่า SSID และ Password ที่ถูกต้องตามสภาพแวดล้อมจริง สังเกต Event `WIFI_EVENT_STA_CONNECTED` และ `IP_EVENT_STA_GOT_IP` พร้อมอ่านหมายเลข IP Address, Subnet Mask และ Gateway
 
 ### 5.2.2 การเชื่อมต่อด้วย SSID ที่ไม่มีอยู่จริง (Wrong SSID / No AP Found)
+
 กำหนดค่า SSID สมมุติที่ไม่มีอยู่จริง (`"NON_EXISTENT_SSID_9999"`) สังเกต Event `WIFI_EVENT_STA_DISCONNECTED` และวิเคราะห์ค่า Reason Code ซึ่งต้องได้ `WIFI_REASON_NO_AP_FOUND` (Decimal 201 / Hex `0xC9`)
 
 ### 5.2.3 การเชื่อมต่อด้วย SSID ที่ถูกต้องแต่ Password ผิด (Wrong Password / Handshake Fail)
+
 กำหนดค่า SSID ถูกต้องแต่ป้อน Password ผิด (`"WRONG_PASS_9999"`) สังเกต Event `WIFI_EVENT_STA_DISCONNECTED` ในขั้นตอน 4-Way Handshake และวิเคราะห์ค่า Reason Code ซึ่งต้องได้ `WIFI_REASON_HANDSHAKE_TIMEOUT` (15) หรือ `WIFI_REASON_AUTH_FAIL` (202 / 204)
 
 ---
@@ -107,7 +117,7 @@ classDiagram
 
 ให้นักศึกษานำซอร์สโค้ด C ต่อไปนี้ไปวางในไฟล์ `main/main.c` ของโปรเจกต์ ESP-IDF ทำการ Build และ Flash ลงบอร์ด ESP32 จากนั้นเปิด ESP-IDF Monitor (Baud Rate `115200`) เพื่อสังเกตผลการทำงาน
 
-==**หมายเหตุ** ใน source code ด้านล่าง  แนะนำให้ใช้ MY_SSID และ  MY_PASSWORD จาก mobile hotspot และต้องลบออกก่อน push ขึ้น git== 
+==**หมายเหตุ** ใน source code ด้านล่าง แนะนำให้ใช้ MY_SSID และ MY_PASSWORD จาก mobile hotspot และต้องลบออกก่อน push ขึ้น git==
 
 ```c
 #include <stdio.h>
@@ -363,31 +373,44 @@ void app_main(void) {
 ## 6. ตารางบันทึกผลการทดลอง (Experiment Results)
 
 ให้นักศึกษาบันทึกผลลัพธ์จากการสังเกตใน Serial Console ลงในตารางต่อไปนี้:
+![alt text](image-2.png)
 
 ### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองทั้ง 3 สถานการณ์
 
-| ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
-| :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.2.1** | SSID และ Password ถูกต้อง | | | | |
-| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | | | | |
-| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | | | | |
+| ข้อการทดลอง | สถานการณ์ทดสอบ                     |    Event สุดท้ายที่ได้รับ     | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code          |
+| :---------: | :--------------------------------- | :---------------------------: | :---------------------: | :-------------------------: | :---------------------------- |
+|  **5.2.1**  | SSID และ Password ถูกต้อง          |     `IP_EVENT_STA_GOT_IP`     |         Passed          |              -              | - (เชื่อมต่อและรับ IP สำเร็จ) |
+|  **5.2.2**  | ระบุ SSID ผิด (ไม่มีในระบบ)        | `WIFI_EVENT_STA_DISCONNECTED` |         Failed          |         201 / 0xC9          | `WIFI_REASON_NO_AP_FOUND`     |
+|  **5.2.3**  | ระบุ SSID ถูกต้อง แต่ Password ผิด | `WIFI_EVENT_STA_DISCONNECTED` |         Failed          |         202 / 0xCA          | `WIFI_REASON_AUTH_FAIL`       |
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
-| พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
-| :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| พารามิเตอร์เครือข่าย    | ค่าที่ได้รับจริงจาก DHCP |
+| :---------------------- | :----------------------- |
+| **SSID**                | `A06`                    |
+| **BSSID (MAC Address)** | `0E:2C:C3:C8:7C:6D`      |
+| **Channel**             | `6`                      |
+| **IP Address**          | `10.23.218.127`          |
+| **Subnet Mask**         | `255.255.255.0`          |
+| **Default Gateway**     | `10.23.218.172`          |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
-1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
-2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
-3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
-4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+1. **เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?**
+   - **คำตอบ**: พอตั้งชื่อ SSID ผิด ตัว ESP32 จะส่ง Probe Request ไปตามหา AP ชื่อนั้น แต่ไม่มี AP ตัวไหนตอบกลับมา พอสแกนแล้วไม่เจออะไรตั้งแต่เฟสสแกน (Scan Phase) ระบบเลยตัดการเชื่อมต่อทันทีพร้อมแจ้ง Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ว่าหา AP ชื่อนี้ไม่เจอ
+
+2. **เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?**
+   - **คำตอบ**: เพราะในเฟส Auth กับ Assoc เป็นแค่การทักทายและตกลงจับคู่ช่องสัญญาณกันเฉยๆ ยังไม่ได้เอา Password มาตรวจ พอผ่านเข้ามาถึงเฟส **4-Way Handshake** ซึ่งเป็นขั้นตอนคำนวณและถอดรหัส Key สื่อสาร พอรหัสผ่านผิด ESP32 กับ AP เลยถอดรหัส Key ไม่ตรงกัน เกิด Timeout แล้วตัดการเชื่อมต่อด้วย Reason Code `202` (`0xCA`) `WIFI_REASON_AUTH_FAIL`
+
+3. **ลำดับการเกิด Event ระหว่าง `WIFI_EVENT_STA_CONNECTED` กับ `IP_EVENT_STA_GOT_IP` Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?**
+   - **คำตอบ**:
+     - **`WIFI_EVENT_STA_CONNECTED` เกิดก่อน**: หมายถึงต่อติดในระดับ **Data Link Layer (Layer 2)** คือเสา Wi-Fi ของ ESP32 ต่อจับคู่สัญญาณกับ AP ได้แล้ว
+     - **`IP_EVENT_STA_GOT_IP` เกิดทีหลัง**: หมายถึงต่อติดในระดับ **Network Layer (Layer 3)** คือตัว ESP32 ขอและได้รับแจกหมายเลข IP Address จาก DHCP Server เรียบร้อยแล้ว (เช่น `172.20.10.2`) พร้อมใช้งานอินเทอร์เน็ตออกข้างนอกได้
+
+4. **สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?**
+   - **คำตอบ**: ตัวแปร `reason` มีประโยชน์มาก เพราะบอกสาเหตุตรงๆ ว่าทำไมเน็ตถึงหลุด
+     - ถ้าได้ `201` (หา AP ไม่เจอ) ➔ ให้โปรแกรมรอสักพักค่อยลองสแกนหาใหม่
+     - ถ้าได้ `202` (Password ผิด) ➔ ให้ระบบแจ้งเตือนว่ารหัสผ่านผิด อย่าเพิ่งกดต่อซ้ำๆ เพราะต่อยังไงก็ไม่ผ่าน
+     - ถ้าหลุดเพราะสัญญาณหลุดชั่วคราว ➔ ให้สั่ง Reconnect ใหม่อัตโนมัติได้ทันทีโดยไม่ต้องรีเซ็ตบอร์ดใหม่

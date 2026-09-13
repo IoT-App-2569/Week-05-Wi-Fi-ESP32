@@ -1,6 +1,7 @@
 # ใบงานที่ 5.4: กระบวนการแลกเปลี่ยนคีย์ความปลอดภัยและการจัดสรรหมายเลข IP Address (4-Way Handshake & IP Assignment Phase)
 
 ## 0. กล่าวนำ (Introduction)
+
 ใบงานนี้มุ่งเน้นศึกษาขั้นตอนสุดท้ายของการเชื่อมต่อ Wi-Fi นั่นคือ **เฟสที่ 4: Four-way Handshake Phase (การตกลงคีย์ความปลอดภัย WPA2/WPA3)** และ **เฟสที่ 5: IP Assignment Phase (การขอรับหมายเลข IP Address ผ่าน DHCP)** บนเฟรมเวิร์ก ESP-IDF
 
 นักศึกษาจะได้ศึกษาถึงกลไกการแลกเปลี่ยนเฟรม **EAPOL-Key Frames (1/4 ถึง 4/4)** เพื่อพิสูจน์ทราบความถูกต้องของรหัสผ่าน (Pre-Shared Key - PSK) โดยไม่มีการส่งรหัสผ่านจริงผ่านคลื่นวิทยุ รวมถึงสังเกตการณ์ทำงานเมื่อพิมพ์รหัสผ่านผิด ซึ่งจะนำไปสู่ความล้มเหลวในการตรวจสอบค่า MIC (Message Integrity Code) และเกิด Disconnect Event ด้วย Reason Code `15` (`WIFI_REASON_HANDSHAKE_TIMEOUT`) หรือ `204` (`WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT`)
@@ -8,6 +9,7 @@
 ---
 
 ## 1. วัตถุประสงค์ (Objectives)
+
 1. เรียนรู้กลไกการแลกเปลี่ยนคีย์ความปลอดภัย WPA2 Personal (4-Way Handshake) ผ่านโปรโตคอล EAPOL
 2. เข้าใจบทบาทของ PMK (Pairwise Master Key), ANonce, SNonce, PTK (Pairwise Transient Key) และ MIC (Message Integrity Code)
 3. สังเกตและวิเคราะห์ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** (สำเร็จในเฟส 3 Link-Layer) และ **`IP_EVENT_STA_GOT_IP`** (สำเร็จในเฟส 5 Network Layer)
@@ -17,6 +19,7 @@
 ---
 
 ## 2. อุปกรณ์และซอฟต์แวร์ที่ใช้ในการทดลอง (Equipment & Tools)
+
 1. บอร์ดไมโครคอนโทรลเลอร์ ESP32 (เช่น ESP32 DevKit V1) จำนวน 1 บอร์ด
 2. สายเชื่อมต่อ Micro-USB หรือ USB-C จำนวน 1 เส้น
 3. คอมพิวเตอร์ที่ติดตั้งโปรแกรม IDE เช่น VS Code พร้อมทั้ง ESP-IDF (อาจจะติดตั้งบนเครื่องหรือบน Docker ก็ได้)
@@ -78,9 +81,11 @@ classDiagram
 ในใบงานนี้ จะทำการทดสอบสถาปนาการเชื่อมต่อจนถึงขั้นตกลงคีย์เข้ารหัสและรับ IP Address ใน 2 สถานการณ์:
 
 ### 5.4.1 การเชื่อมต่อสำเร็จด้วย Password ที่ถูกต้อง (Success Case)
+
 กำหนดค่า SSID และ Password ที่ถูกต้องตามความเป็นจริง สังเกต Forensic Log จากเฟส 3 (`WIFI_EVENT_STA_CONNECTED`) ไปสู่เฟส 4 (4-Way Handshake) และสิ้นสุดที่เฟส 5 (`IP_EVENT_STA_GOT_IP`) พร้อมบันทึกหมายเลข IP Address, Subnet Mask และ Gateway
 
 ### 5.4.2 การจำลองความล้มเหลวใน 4-Way Handshake เมื่อพิมพ์ Password ผิด (Handshake Failure Case)
+
 กำหนดค่า SSID ถูกต้องแต่ระบุ Password ผิด (`"WRONG_PASSWORD_1234"`) สังเกต Forensic Log เพื่อยืนยันว่า ESP32 สามารถผ่านเฟส 2 และ 3 ได้ (`WIFI_EVENT_STA_CONNECTED`) แต่จะถูกตัดการเชื่อมต่อในเฟส 4 เนื่องจาก MIC ไม่ตรงกัน ส่งผลให้เกิด Disconnect Event ด้วย Reason Code `15` (`WIFI_REASON_HANDSHAKE_TIMEOUT`) หรือ `204` (`WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT`)
 
 ---
@@ -325,27 +330,38 @@ void app_main(void) {
 ## 6. ตารางบันทึกผลการทดลอง (Experiment Results)
 
 ให้นักศึกษาบันทึกผลลัพธ์จากการสังเกตใน Serial Console ลงในตารางต่อไปนี้:
+![alt text](image-4.png)
 
 ### 6.1 ตารางสรุปเปรียบเทียบผลการทดลองใน Handshake & IP Phase
 
-| ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
-| :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| ข้อการทดลอง | สถานการณ์ทดสอบ                       | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี)                                       |
+| :---------: | :----------------------------------- | :---------------------------------------------: | :----------------------------------------: | :--------: | :------------------------------------------------------------------- |
+|  **5.4.1**  | Password ถูกต้อง (`012345678`)       |                      เกิด                       |                    เกิด                    | **PASSED** | -                                                                    |
+|  **5.4.2**  | Password ผิด (`WRONG_PASSWORD_1234`) |                      เกิด                       |                  ไม่เกิด                   | **FAILED** | `204 / 0xCC` (`WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT`) หรือ `15 / 0x0F` |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
-| :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| :------------------------ | :--------------------------------- |
+| **IP Address**            | `10.23.218.127`                    |
+| **Subnet Mask**           | `255.255.255.0`                    |
+| **Default Gateway**       | `10.23.218.172`                    |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+   - **ตอบ**: เพราะทั้ง ESP32 (Station) และ Access Point ต่างนำรหัสผ่าน (Passphrase) และ SSID มาผ่านกระบวนการ PBKDF2 เพื่อคำนวณคีย์ความลับหลักร่วมกันล่วงหน้าเรียกว่า **PMK (Pairwise Master Key)** ไว้ฝั่งตนเอง ในช่วง 4-Way Handshake ทั้งสองฝั่งจะส่งเพียงค่าสุ่ม (ANonce จาก AP และ SNonce จาก STA) แล้วนำมาผสมกับ PMK เพื่อสร้างคีย์ **PTK** และสร้างค่าลายเซ็นตรวจสอบ **MIC (Message Integrity Code)** แนบไปกับเฟรม EAPOL เมื่อฝั่งรับได้รับจะนำ PMK ของตนมาคำนวณตรวจสอบ MIC หากค่า MIC ตรงกัน แสดงว่าทั้งสองฝั่งถือรหัสผ่านเดียวกันโดยไม่ต้องส่งตัวรหัสผ่านจริงออกไปกลางอากาศเลย
+
 2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+   - **ตอบ**:
+     - **PMK**: คีย์หลักที่เกิดจากการแปลงรหัสผ่าน Passphrase ร่วมกับชื่อ SSID ผ่านอัลกอริทึม PBKDF2 (วนลูปคำนวณ 4,096 รอบ) คีย์นี้จะมีค่าคงที่ตลอดเวลาตราบใดที่ไม่เปลี่ยนรหัสผ่าน Wi-Fi
+     - **PTK**: คีย์ชั่วคราวที่สร้างขึ้นใหม่ทุกครั้งที่มีการเชื่อมต่อ เกิดจากการนำ PMK มาผสมกับค่าสุ่ม ANonce, SNonce, AP MAC Address และ STA MAC Address ผ่านฟังก์ชัน PRF (Pseudo-Random Function)
+     - **ความสัมพันธ์**: PMK ทำหน้าที่เป็น "แม่คีย์หลัก" ประจำรหัสผ่าน ส่วน PTK คือ "คีย์ลูก" ที่ถอดมาจาก PMK สำหรับใช้เข้ารหัสและถอดรหัสแพ็กเกจข้อมูลจริง (Unicast Data Frames) ในการเชื่อมต่อรอบนั้นๆ เพื่อป้องกันไม่ให้ใช้คีย์เดิมซ้ำในการรับส่งข้อมูล
+
 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
+   - **ตอบ**: เพราะขั้นตอนการเชื่อมต่อ Wi-Fi ทำงานแยกกันเป็นลำดับเฟส โดย Event `WIFI_EVENT_STA_CONNECTED` เป็น Event ของ **เฟสที่ 3 (Association Phase)** ซึ่งเกิดขึ้นเมื่อการสถาปนาลิงก์ระดับ Layer 2 (Link-Layer 802.11) สำเร็จแล้ว แต่กระบวนการตรวจเช็กรหัสผ่าน WPA2 อยู่ใน **เฟสที่ 4 (4-Way Handshake)** ซึ่งเกิดขึ้นต่อจากเฟส 3 ดังนั้นเมื่อใส่ Password ผิด ESP32 จึงผ่านเฟส 3 และแจ้งเตือน `STA_CONNECTED` ก่อน จากนั้นเมื่อเข้าเฟส 4 แล้วคำนวณ MIC ไม่ตรงกัน ระบบจึงล้มเหลวและแจ้งตัดการเชื่อมต่อ `STA_DISCONNECTED` พร้อม Reason Code `204` (`WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT`) หรือ `15` (`WIFI_REASON_HANDSHAKE_TIMEOUT`) ในเวลาต่อมา
+
 4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+   - **ตอบ**: หากไม่มี DHCP Server การเชื่อมต่อจะผ่านเฟส 4 (4-Way Handshake) ได้สำเร็จเรียบร้อย แต่จะไปหยุด/ค้างอยู่ที่ **เฟสที่ 5 (IP Assignment Phase)** เนื่องจาก ESP32 ส่งคำร้องขอ DHCP Discover/Request แล้วไม่ได้รับการตอบกลับ ทำให้หมดเวลา (Timeout) และ **จะไม่เกิด Event `IP_EVENT_STA_GOT_IP`** ส่งผลให้ ESP32 ไม่ได้รับ IP Address และไม่สามารถสื่อสารในระดับโปรโตคอล IP (เช่น Ping, HTTP, MQTT) ได้จนกว่าจะตั้งค่า Static IP ด้วยตนเอง

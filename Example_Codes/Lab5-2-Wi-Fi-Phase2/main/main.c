@@ -19,36 +19,36 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_FAIL_BIT BIT1
 
 // Configurable target Wi-Fi credentials for successful test
-#define EXAMPLE_ESP_WIFI_SSID "MY_SSID"
-#define EXAMPLE_ESP_WIFI_PASS "MY_PASSWORD"
+#define EXAMPLE_ESP_WIFI_SSID "A06"
+#define EXAMPLE_ESP_WIFI_PASS "012345678"
 
 // Convert wifi_reason_code_t to readable string
 static const char *get_disconnect_reason_name(uint8_t reason) {
   switch (reason) {
-  case WIFI_REASON_UNSPECIFIED:
+  case 1:
     return "WIFI_REASON_UNSPECIFIED (1)";
-  case WIFI_REASON_AUTH_EXPIRE:
+  case 2:
     return "WIFI_REASON_AUTH_EXPIRE (2)";
-  case WIFI_REASON_AUTH_LEAVE:
+  case 3:
     return "WIFI_REASON_AUTH_LEAVE (3)";
-  case WIFI_REASON_ASSOC_EXPIRE:
+  case 4:
     return "WIFI_REASON_ASSOC_EXPIRE (4)";
-  case WIFI_REASON_ASSOC_FAIL:
-    return "WIFI_REASON_ASSOC_FAIL (203)";
-  case WIFI_REASON_NOT_AUTHED:
+  case 6:
     return "WIFI_REASON_NOT_AUTHED (6)";
-  case WIFI_REASON_HANDSHAKE_TIMEOUT:
+  case 15:
     return "WIFI_REASON_HANDSHAKE_TIMEOUT (15)";
-  case WIFI_REASON_NO_AP_FOUND:
-    return "WIFI_REASON_NO_AP_FOUND (201)";
-  case WIFI_REASON_AUTH_FAIL:
-    return "WIFI_REASON_AUTH_FAIL (202)";
-  case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
-    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204)";
-  case WIFI_REASON_CONNECTION_FAIL:
-    return "WIFI_REASON_CONNECTION_FAIL (208)";
-  case WIFI_REASON_BEACON_TIMEOUT:
+  case 200:
     return "WIFI_REASON_BEACON_TIMEOUT (200)";
+  case 201:
+    return "WIFI_REASON_NO_AP_FOUND (201)";
+  case 202:
+    return "WIFI_REASON_AUTH_FAIL (202)";
+  case 203:
+    return "WIFI_REASON_ASSOC_FAIL (203)";
+  case 204:
+    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204)";
+  case 208:
+    return "WIFI_REASON_CONNECTION_FAIL (208)";
   default:
     return "OTHER_DISCONNECT_REASON";
   }
@@ -130,9 +130,6 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "  Target SSID: \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
-  // Clear event bits
-  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
-
   wifi_config_t wifi_config = {
       .sta =
           {
@@ -145,6 +142,9 @@ static void test_wifi_connection(const char *test_title, const char *ssid,
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
   esp_wifi_stop();
+
+  // Clear event bits after esp_wifi_stop to remove stale disconnect event
+  xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   ESP_LOGI(TAG,
            "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");

@@ -17,29 +17,29 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
 
-#define TARGET_WIFI_SSID   "S24 Ultra Koson"
-#define TARGET_WIFI_PASS   "1234567890"
+#define TARGET_WIFI_SSID   "A06"
+#define TARGET_WIFI_PASS   "012345678"
 
 static const char *get_disconnect_reason_info(uint8_t reason) {
   switch (reason) {
-  case WIFI_REASON_UNSPECIFIED:
+  case 1:
     return "WIFI_REASON_UNSPECIFIED (1)";
-  case WIFI_REASON_AUTH_EXPIRE:
+  case 2:
     return "WIFI_REASON_AUTH_EXPIRE (2)";
-  case WIFI_REASON_AUTH_FAIL:
-    return "WIFI_REASON_AUTH_FAIL (1/202)";
-  case WIFI_REASON_ASSOC_EXPIRE:
+  case 4:
     return "WIFI_REASON_ASSOC_EXPIRE (4)";
-  case WIFI_REASON_ASSOC_FAIL:
-    return "WIFI_REASON_ASSOC_FAIL (3/203)";
-  case WIFI_REASON_HANDSHAKE_TIMEOUT:
+  case 15:
     return "WIFI_REASON_HANDSHAKE_TIMEOUT (15) [Phase 4: MIC mismatch / EAPOL timeout]";
-  case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
-    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204) [Phase 4: Wrong Password]";
-  case WIFI_REASON_NO_AP_FOUND:
-    return "WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]";
-  case WIFI_REASON_BEACON_TIMEOUT:
+  case 200:
     return "WIFI_REASON_BEACON_TIMEOUT (200)";
+  case 201:
+    return "WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]";
+  case 202:
+    return "WIFI_REASON_AUTH_FAIL (1/202)";
+  case 203:
+    return "WIFI_REASON_ASSOC_FAIL (3/203)";
+  case 204:
+    return "WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204) [Phase 4: Wrong Password]";
   default:
     return "OTHER_DISCONNECT_REASON";
   }
@@ -117,6 +117,9 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
   ESP_LOGI(TAG, "  Target SSID    : \"%s\"", ssid);
   ESP_LOGI(TAG, "  Target Password: \"%s\"", password);
 
+  ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
+  esp_wifi_stop();
+  vTaskDelay(pdMS_TO_TICKS(200));
   xEventGroupClearBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
 
   wifi_config_t wifi_config = {
@@ -127,9 +130,6 @@ static void test_handshake_ip_phase(const char *test_title, const char *ssid,
   strncpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
   strncpy((char *)wifi_config.sta.password, password,
           sizeof(wifi_config.sta.password));
-
-  ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_stop()");
-  esp_wifi_stop();
 
   ESP_LOGI(TAG, "[FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)");
   esp_err_t err_cfg = esp_wifi_set_config(WIFI_IF_STA, &wifi_config);

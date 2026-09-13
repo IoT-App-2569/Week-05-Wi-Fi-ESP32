@@ -1,1 +1,23 @@
-.obsidian/**
+# ESP-IDF build directory and generated files
+**/build/
+**/managed_components/
+**/dependencies.lock
+sdkconfig
+sdkconfig.old
+sdkconfig.ci
+*.elf
+*.bin
+*.map
+
+# Editor & IDE metadata
+.obsidian/
+.vscode/
+.idea/
+.clang-format
+.clangd
+.cproject
+.project
+
+# System temporary files
+.DS_Store
+Thumbs.db
