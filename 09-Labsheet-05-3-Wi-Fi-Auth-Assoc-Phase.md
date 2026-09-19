@@ -320,24 +320,53 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event ที่ได้รับ | ผลการผูกสัมพันธ์ Link Layer | ค่า Association ID (AID) ที่ได้ | Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง | | | | |
-| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง | | | | |
+| **5.3.1** | ร้องขอ Auth & Assoc กับ AP มีอยู่จริง |WIFI_EVENT_STA_CONNECTED |TEST PASSED |13 |3 (0x03) |
+| **5.3.2** | ร้องขอ Auth & Assoc กับ AP ไม่มีอยู่จริง |WIFI_EVENT_STA_DISCONNECTED |TEST FAILED |N/A |201 (0xC9) |
 
 ### 6.2 บันทึกข้อมูล Link Layer จาก Event `WIFI_EVENT_STA_CONNECTED` (ข้อ 5.3.1)
 
 | พารามิเตอร์ Link Layer | ค่าที่อ่านได้จริงจาก Forensic Log |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **Auth Mode Enum** | |
-| **Association ID (AID)** | |
+| **SSID** |iPhone ing |
+| **BSSID (MAC Address)** |AE:78:7D:10:5A:AD |
+| **Channel** |6 |
+| **Auth Mode Enum** |3 |
+| **Association ID (AID)** |13 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. **Association ID (AID)** คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?
+```
+ความหมายและบทบาท: Association ID (AID) คือหมายเลขระบุตัวตนชั่วคราว (16-bit Numerical Identifier) ที่ Access Point (AP) เป็นผู้ออกและมอบหมายให้แก่ Station (ESP32) ใน Phase 3 (Association Phase) เพื่อใช้เป็นดรรชนีระบุตัวตนของ Station นั้นๆ ภายใน BSS (Basic Service Set) โดย AP จะนำ AID ไปใช้จัดการคิวข้อมูล และแจ้งเตือนสถานะการรับส่งข้อมูลผ่าน TIM (Traffic Indication Map) ใน Beacon Frame เพื่อให้ ESP32 รู้ว่ามีข้อมูลรอนำส่งอยู่หรือไม่เมื่อตื่นจาก Power Save Mode
+โครงสร้างข้อมูลตัวแปรที่ส่งคืน: ส่งคืนมาในโครงสร้างข้อมูล (Struct) wifi_event_sta_connected_t ผ่านฟิลด์ตัวแปร aid (ซึ่งเข้าถึงได้จาก event_data ใน Event Handler เมื่อเกิด WIFI_EVENT_STA_CONNECTED)
+```
 2. เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event `WIFI_EVENT_STA_CONNECTED` ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?
+```
+สาเหตุ: เพราะการทำงานระดับ Link-Layer (Phase 2 & Phase 3) ทำหน้าที่สร้างการเชื่อมต่อทางกายภาพและตรรกะในระดับมาตรฐาน 802.11 เท่านั้น:
+ใน Phase 2 (Auth) ของ WPA2-PSK จะใช้รูปแบบ Open System Authentication (ส่งเพียงการขอและตอบรับแบบจับคู่เปิด เพื่อยืนยันว่าพร้อมสื่อสารกัน)
+ใน Phase 3 (Assoc) เป็นเพียงการตกลงคุณสมบัติฮาร์ดแวร์และการลงทะเบียนเข้าเป็นสมาชิกเครือข่าย เมื่อจบ Phase 3 AP จะออก AID ให้ และ ESP-IDF จะส่ง Event WIFI_EVENT_STA_CONNECTED ทันที
+
+กระบวนการตรวจสอบรหัสผ่าน: รหัสผ่าน (Password/PMK) จะยังไม่ถูกตรวจสอบเลยจนกว่าจะเข้าสู่ Phase 4 (WPA2 4-Way Handshake) ซึ่งเป็นกระบวนการยืนยันตัวตนระดับ Security Layer หากป้อนรหัสผ่านผิด ระบบจะไปล้มเหลวใน Phase 4 และถูกตัดการเชื่อมต่อด้วย Reason Code เช่น 204 (WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) ในเวลาต่อมา
+```
 3. หาก Router มีการตั้งค่า **MAC Address Filtering** (อนุญาตเฉพาะ MAC ที่ลงทะเบียน) ESP32 จะล้มเหลวในเฟสใด และจะส่ง Disconnect Reason Code ใดออกมา?
+
+```
+เฟสที่ล้มเหลว: จะล้มเหลวใน Phase 2 (Authentication Phase) หรือ Phase 3 (Association Phase) (ขึ้นอยู่กับยี่ห้อและการออกแบบของ AP/Router ว่าจะปฏิเสธตั้งแต่เฟรม Auth Request หรือยอมให้ Auth ผ่านแล้วไปปฏิเสธในเฟรม Assoc Request)
+Disconnect Reason Code ที่ส่งออกมา:
+หากปฏิเสธใน Phase 2: ส่ง Reason Code 2 (WIFI_REASON_AUTH_EXPIRE) หรือ Reason Code 1 / 202 (WIFI_REASON_AUTH_FAIL)
+หากปฏิเสธใน Phase 3: ส่ง Reason Code 3 / 203 (WIFI_REASON_ASSOC_FAIL)
+``` 
 4. สรุปความแตกต่างสำคัญระหว่างจุดสิ้นสุดของ **Phase 3 (Link-Layer Connected)** กับจุดสิ้นสุดของ **Phase 5 (IP Address Assigned)**
+
+
+ สรุปความแตกต่างระหว่างจุดสิ้นสุด Phase 3 และ Phase 5
+
+| ประเด็นเปรียบเทียบ | จุดสิ้นสุด Phase 3 (Link-Layer Connected) | จุดสิ้นสุด Phase 5 (IP Address Assigned) |
+| :--- | :--- | :--- |
+| **ระดับชั้นการทำงาน (Layer)** | **Data Link Layer (Layer 2)**<br>ตามมาตรฐาน IEEE 802.11 | **Network Layer (Layer 3)**<br>ตามมาตรฐาน TCP/IP |
+| **สถานะการเชื่อมต่อ** | ESP32 สถาปนาสายสัญญาณไร้สายและได้ AID จาก AP สำเร็จแล้ว แต่**ยังไม่ได้รับการยืนยันรหัสผ่าน WPA2** | ESP32 ยืนยันรหัสผ่าน WPA2 (Phase 4) และขอรับหมายเลข IP Address จาก DHCP Server (Phase 5) สำเร็จแล้ว |
+| **ความสามารถในการรับ-ส่งข้อมูล** | รับ-ส่งได้เฉพาะ **802.11 Management / Control Frames** (เช่น Auth, Assoc, EAPOL Keys) ไม่สามารถส่งแพ็กเกจข้อมูลทั่วไปได้ | รับ-ส่งข้อมูลแพ็กเกจ **IP Data Packets** (เช่น HTTP, MQTT, Ping, Socket) ออกสู่เครือข่าย Local หรือ Internet ได้สมบูรณ์ |
+| **Event ใน ESP-IDF** | เกิด `WIFI_EVENT_STA_CONNECTED` | เกิด `IP_EVENT_STA_GOT_IP` |
+
