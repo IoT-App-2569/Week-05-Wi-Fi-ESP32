@@ -330,22 +330,49 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event `WIFI_EVENT_STA_CONNECTED` (เกิด/ไม่เกิด) | Event `IP_EVENT_STA_GOT_IP` (เกิด/ไม่เกิด) | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.4.1** | Password ถูกต้อง | | | | |
-| **5.4.2** | Password ผิด | | | | |
+| **5.4.1** | Password ถูกต้อง |เกิด |เกิด |TEST PASSED | |
+| **5.4.2** | Password ผิด |เกิด |ไม่เกิด |TEST FAILED |15 (0x0F)(WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) |
 
 ### 6.2 บันทึกข้อมูล IP Network จาก Event `IP_EVENT_STA_GOT_IP` (ข้อ 5.4.1)
 
 | พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
 | :--- | :--- |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **IP Address** |172.20.10.13 |
+| **Subnet Mask** |255.255.255.240 |
+| **Default Gateway** |172.20.10.1 |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดกระบวนการ **4-Way Handshake** จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?
+```
+เนื่องจากกระบวนการ 4-Way Handshake ใช้หลักการที่เรียกว่า Zero-Knowledge Proof ผ่านการคำนวณถอดรหัสและสร้าง MIC (Message Integrity Code) ร่วมกับค่าสุ่ม (Nonces) โดยมีรายละเอียดดังนี้:
+ทั้งสองฝั่ง (ESP32 และ AP) นำ Passphrase มาแปลงผ่านอัลกอริทึม PBKDF2 ร่วมกับ SSID เพื่อสร้างเป็น PMK (Pairwise Master Key) เก็บไว้ในหน่วยความจำของตนเองตั้งแต่แรก
+ในระหว่างการ Handshake ทั้งสองฝั่งจะส่งเพียงค่าสุ่มลอยผ่านอากาศ ได้แก่ ANonce (จาก AP) และ SNonce (จาก ESP32) รวมทั้ง MAC Address ของทั้งสองฝั่ง
+ทั้งสองฝั่งนำค่าสุ่มเหล่านี้ไปคำนวณสร้างคีย์ชั่วคราว PTK (Pairwise Transient Key) อย่างเป็นอิสระต่อกัน
+จากนั้นฝั่ง ESP32 จะสร้างค่า MIC แนบไปกับ Message 2 เพื่อยืนยันว่าตนเองมี PTK (ซึ่งเกิดจาก PMK เดียวกัน) หากฝั่ง AP ถอดรหัส/คำนวณ MIC แล้วตรงกัน จะถือเป็นการพิสูจน์ทันทีว่าทั้งสองฝั่งใช้ Passphrase เดียวกัน โดยไม่ต้องส่ง Passphrase หรือ PMK ผ่านอากาศเลย
+```
 2. อธิบายบทบาทและที่มาของคีย์ **PMK (Pairwise Master Key)** และ **PTK (Pairwise Transient Key)** ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?
+```
+ความสัมพันธ์และบทบาทของคีย์ทั้งสองสรุปได้ดังนี้:
+PMK (Pairwise Master Key):
+ที่มา: ได้มาจากการนำ Wi-Fi Passphrase และ SSID ไปเข้าสมการแฮช PBKDF2-SHA1 จำนวน 4,096 รอบ (เป็นคีย์แบบถาวรตลอดการตั้งค่า Passphrase นั้นๆ)
+บทบาท: เป็น "คีย์แม่บท" ที่ใช้เป็นวัตถุดิบหลักในการคำนวณสร้าง PTK ร่วมกับค่าสุ่ม แต่ ไม่ได้ถูกนำไปใช้เข้ารหัสข้อมูลการรับ-ส่งจริง ในเครือข่าย
+PTK (Pairwise Transient Key):
+ที่มา: สร้างขึ้นในขั้นตอน 4-Way Handshake โดยคำนวณจาก:
+PTK=PRF(PMK,ANonce,SNonce,AP MAC,STA MAC)
+บทบาท: เป็น "คีย์ชั่วคราว" ที่ประกอบด้วยคีย์ย่อยสำหรับตรวจสอบความถูกต้อง (KHMAC/KIP) และคีย์สำหรับ เข้ารหัสเฟรมข้อมูลจริง (Data Frames) เช่น TKIP หรือ CCMP (AES) ซึ่งจะถูกสร้างขึ้นใหม่ทุกครั้งที่มีการเชื่อมต่อใหม่ เพื่อป้องกันการโจมตีแบบ Replay Attack
+```
 3. เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event **`WIFI_EVENT_STA_CONNECTED`** ก่อนที่จะเกิด Event **`WIFI_EVENT_STA_DISCONNECTED`** ตามมาในภายหลัง?
+
+```
+เพราะว่าตามลำดับขั้นตอนของ Wi-Fi Protocol (802.11) กระบวนการเชื่อมต่อถูกแบ่งออกเป็นหลาย Phase ชัดเจน:
+Phase 2 (Authentication) & Phase 3 (Association): เป็นขั้นตอนระดับ Layer 2 (Link Layer) เพื่อตกลงการเข้าสู่เครือข่าย ซึ่งในขั้นตอนนี้ ยังไม่มีการตรวจสอบ Password (ใน WPA2-PSK ขั้นตอน Auth จะเป็นเพียงระบบ Open System) เมื่อผ่าน Phase 3 แล้ว Driver ของ ESP-IDF จะส่ง Event WIFI_EVENT_STA_CONNECTED ทันที เพื่อแจ้งว่าอุปกรณ์ได้ทำการเกาะ (Associate) กับ Access Point เรียบร้อยแล้ว
+Phase 4 (4-Way Handshake): เกิดขึ้น หลังจาก สัญญาณการเกาะติดแล้ว หากใส่ Password ผิด ESP32 จะสร้าง PTK และ MIC ไม่ตรงกับที่ AP คาดหวัง ส่งผลให้ Handshake ไม่สำเร็จ เกิด Timeout (~3 วินาที) ฝั่ง AP จึงสั่งตัดการเชื่อมต่อและส่ง Event WIFI_EVENT_STA_DISCONNECTED (Reason Code 15: WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) ตามมาทีหลัง
+```
 4. หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?
+```
+ ขั้นตอนที่หยุด: ผลการทดลองจะทำสำเร็จไปจนจบ Phase 4 (4-Way Handshake สำเร็จ) การเชื่อมต่อระดับ Layer 2 และการสร้าง encryption key เสร็จสมบูรณ์แล้ว แต่จะไป ติดค้าง (Timeout) อยู่ที่ Phase 5 (DHCP Phase)
+Event ที่จะไม่เกิดขึ้น: จะ ไม่เกิด Event IP_EVENT_STA_GOT_IP เนื่องจาก ESP32 ส่งแพ็กเกจ DHCP Discover ออกไปแล้ว แต่ไม่มี DHCP Server คอยตอบกลับ DHCP Offer ทำให้ ESP32 ไม่ได้รับการจัดสรร IP Address, Subnet Mask และ Gateway มาใช้งาน  
+```
