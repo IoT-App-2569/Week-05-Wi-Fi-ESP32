@@ -368,26 +368,52 @@ void app_main(void) {
 
 | ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
 | :---: | :--- | :---: | :---: | :---: | :--- |
-| **5.2.1** | SSID และ Password ถูกต้อง | | | | |
-| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) | | | | |
-| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด | | | | |
+| **5.2.1** | SSID และ Password ถูกต้อง |WIFI_EVENT_STA_DISCONNECTED |Failed |3 / 0x03 |WIFI_REASON_AUTH_LEAVE |
+| **5.2.2** | ระบุ SSID ผิด (ไม่มีในระบบ) |WIFI_EVENT_STA_DISCONNECTED |Failed |201 / 0xC9 |WIFI_REASON_NO_AP_FOUND |
+| **5.2.3** | ระบุ SSID ถูกต้อง แต่ Password ผิด |WIFI_EVENT_STA_DISCONNECTED |Failed |15 / 0x0F |WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT |
 
 ### 6.2 บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
 
 | พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
 | :--- | :--- |
-| **SSID** | |
-| **BSSID (MAC Address)** | |
-| **Channel** | |
-| **IP Address** | |
-| **Subnet Mask** | |
-| **Default Gateway** | |
+| **SSID** |iPhone ing |
+| **BSSID (MAC Address)** |AE:78:7D:10:5A:AD |
+| **Channel** |6 |
+| **IP Address** |N/A |
+| **Subnet Mask** |N/A |
+| **Default Gateway** |N/A |
 
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code `201` (`WIFI_REASON_NO_AP_FOUND`) ตั้งแต่เฟส Scan?
+```
+เมื่อบอร์ด ESP32 เริ่มกระบวนการเชื่อมต่อ Wi-Fi ในสถานะ Station (STA) เฟสแรกสุดคือการ Scan (ค้นหาสัญญาณ) โดย ESP32 จะส่งเฟรม probe request ออกไปในแต่ละช่องสัญญาณ (Channel 1–13) เพื่อรอรับ probe response หรือคอยดักฟัง Beacon frame จาก Access Point (AP) ในบริเวณนั้น
+หากระบุชื่อ SSID ผิด หรือไม่มี AP ชื่อดังกล่าวอยู่จริง ESP32 จะสแกนค้นหาจนครบทุกช่องสัญญาณแล้วไม่พบ BSSID ที่ตรงกับ SSID ที่กำหนดไว้ในโครงสร้าง wifi_config_t ระบบ Wi-Fi Driver ของ ESP-IDF จึงยุติกระบวนการเชื่อมต่อทันทีโดย ไม่ได้เข้าสู่เฟส Authentication หรือ Association และส่ง Event แจ้งเตือนการเชื่อมต่อล้มเหลวออกมาด้วยรหัสสาเหตุ 201 (WIFI_REASON_NO_AP_FOUND)
+
+```
 2. เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code `15` หรือ `204`)?
+```
+เพราะการทำงานของโปรโตคอลความปลอดภัย WPA2-Personal (WPA2-PSK) แบ่งขั้นตอนออกเป็นคนละส่วนกัน ดังนี้:
+เฟส Authentication & Association (Layer 2 Open System): ใน WPA2-PSK ขั้นตอนนี้เป็นการจับคู่ระดับกายภาพและลิงก์ข้อมูลพื้นฐาน ซึ่งใช้แบบ Open System AP และ Station จะแลกเปลี่ยนเฟรม Auth และ Assoc เพื่อตกลงเข้าเชื่อมต่อช่องสัญญาณโดย ยังไม่มีการส่งหรือตรวจรหัสผ่าน (PSK/Password) ในเฟสนี้ จึงทำให้ผ่านเฟสนี้มาได้ง่ายและได้รับ Event WIFI_EVENT_STA_CONNECTED
+เฟส 4-Way Handshake (WPA2 Security Key Exchange): หลังจาก Assoc สำเร็จ จะเข้าสู่กระบวนการแลกเปลี่ยนคีย์เข้ารหัส 4 ขั้นตอน (4-Way Handshake) โดยทั้งสองฝ่ายจะนำ Password (PSK) มาคำนวณแบบสุ่มทางคณิตศาสตร์ด้วยฟังก์ชันแฮชเพื่อสร้าง PTK (Pairwise Transient Key) หากใส่ Password ผิด ค่าคีย์ที่คำนวณได้จะไม่ตรงกัน ทำให้ถอดรหัสข้อความยืนยันจาก AP ไม่สำเร็จ สื่อสารกันไม่รู้เรื่อง จนเกิด Timeout ล้มเหลวในขั้นตอน 4-Way Handshake และถูกตัดการเชื่อมต่อด้วย Reason Code 15 (WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT / 204)
+
+```
 3. ลำดับการเกิด Event ระหว่าง **`WIFI_EVENT_STA_CONNECTED`** กับ **`IP_EVENT_STA_GOT_IP`** Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?
+ 
+```
+Event ที่เกิดขึ้นก่อน: WIFI_EVENT_STA_CONNECTED เกิดขึ้นก่อน IP_EVENT_STA_GOT_IP
+ความหมายและความแตกต่างทางกายภาพของ Network Layer:
+WIFI_EVENT_STA_CONNECTED (Layer 2 - Data Link Layer / Wi-Fi MAC Level): หมายถึง บอร์ด ESP32 สามารถเชื่อมต่อสายอากาศ/คลื่นวิทยุ ตกลงช่องสัญญาณ (Channel) และยืนยันตัวตนระดับ MAC Address กับ Access Point ได้สำเร็จแล้ว มีสถานะเปรียบเสมือนการ "เอาสาย LAN ไปเสียบเข้ากับสวิตช์/เราเตอร์" แต่ยังไม่มีที่อยู่อุปกรณ์สำหรับรับส่งข้อมูลบนอินเทอร์เน็ต
+IP_EVENT_STA_GOT_IP (Layer 3 - Network Layer / IP Level): หมายถึง บอร์ด ESP32 สามารถสื่อสารผ่านโปรโตคอล DHCP (Dynamic Host Configuration Protocol) กับเราเตอร์เพื่อขอรับหมายเลข IP Address, Subnet Mask และ Default Gateway ได้สำเร็จแล้ว มีสถานะเปรียบเสมือน "เครื่องได้รับหมายเลขที่อยู่บนเครือข่ายเรียบร้อย" พร้อมสำหรับส่งข้อมูลระดับ TCP/IP หรือเชื่อมต่ออินเทอร์เน็ตต่อไป
+
+```
 4. สมาชิกตัวแปร `reason` ในโครงสร้าง `wifi_event_sta_disconnected_t` มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?
+```
+ตัวแปร reason ช่วยให้แอปพลิเคชัน IoT สามารถ ตัดสินใจและจัดการการกู้คืนระบบ (State Machine / Recovery Strategy) ได้อย่างชาญฉลาดและตรงจุด แทนที่จะสั่ง reconnect วนไปเรื่อยๆ โดยไม่จำเป็น ตัวอย่างเช่น:
+กรณีเกิด Temporary Disconnection / Signal Drop (เช่น Reason 3: AUTH_LEAVE หรือ Reason 200: BEACON_TIMEOUT): อาจเกิดจากสัญญาณหลุดชั่วคราว ระบบกู้คืนควรสั่ง esp_wifi_connect() เพื่อพยายามเชื่อมต่อใหม่ทันที (Retry Counter)
+กรณีใส่รหัสผิด หรือหา AP ไม่พบ (เช่น Reason 201: NO_AP_FOUND หรือ Reason 15/204: HANDSHAKE_TIMEOUT): การสั่ง reconnect ทันทีถี่ๆ จะทำให้เสียพลังงานและค้างระบบโดยเปล่าประโยชน์ ระบบควรกำหนดเงื่อนไข Delay แบบ Exponential Backoff หรือเข้าสู่สภาวะ SmartConfig / AP Mode เพื่อให้ผู้ใช้เข้ามาตั้งค่า SSID/Password ใหม่
+กรณี AP ปฏิเสธ หรือเปลี่ยนการเข้ารหัส (เช่น Reason 202: AUTH_FAIL): ระบบสามารถบันทึก Log ความผิดพลาดลง NVS Flash เพื่อให้นักพัฒนาตรวจสอบ (Forensic Analysis) หรือส่งการเตือนผ่านหน้าจอ/LED ให้ผู้ใช้รับทราบปัญหาได้อย่างถูกต้อง
+
+```
