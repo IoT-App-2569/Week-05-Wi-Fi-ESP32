@@ -456,11 +456,11 @@ void app_main(void) {
 
 | ลำดับ | ชื่อเครือข่าย (SSID) | MAC Address (BSSID) | ความแรงสัญญาณ (RSSI: dBm) | ช่องความถี่ (Channel) | ประเภทการเข้ารหัส (Encryption Type) |
 | :---: | :--- | :--- | :---: | :---: | :--- |
-| 1 | <Hidden SSID> |14:2E:5E:20:96:55 |-52 |11 |WPA2_PSK |
-| 2 | <Hidden SSID> |60:CE:86:F8:51:93 |-53 |11 |WPA2_PSK |
-| 3 | <Hidden SSID> |70:F8:2B:E9:DD:CD |-68 |8 |WPA2_PSK |
-| 4 | <Hidden SSID> |70:F8:2B:EF:C7:2D |-71 |1|WPA2_PSK |
-| 5 | <Hidden SSID> |70:F8:2B:F7:F1:D9 |-72 |11 |WPA2_PSK |
+| 1 | Hidden SSID  |14:2E:5E:20:96:55 |-52 |11 |WPA2_PSK |
+| 2 | Hidden SSID  |60:CE:86:F8:51:93 |-53 |11 |WPA2_PSK |
+| 3 | Hidden SSID  |70:F8:2B:E9:DD:CD |-68 |8 |WPA2_PSK |
+| 4 | Hidden SSID  |70:F8:2B:EF:C7:2D |-71 |1|WPA2_PSK |
+| 5 | Hidden SSID  |70:F8:2B:F7:F1:D9 |-72 |11 |WPA2_PSK |
 
 ---
 
