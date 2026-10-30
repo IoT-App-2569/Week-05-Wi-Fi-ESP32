@@ -23,6 +23,85 @@
 | 4 | AIS_SUPER_WiFi | 2C:39:96:4E:91:02 | -73 dBm | 1 | WPA2_PSK |
 | 5 | &lt;Hidden SSID&gt; | E8:65:D4:A0:18:7E | -81 dBm | 6 | WPA2_PSK |
 
+### 6.3 ผลลัพธ์จาก Serial Monitor Console (Forensic Output Log)
+
+```text
+I (516) main_task: Calling app_main()
+I (516) LAB_WIFI_SCAN: [FORENSIC]: Call nvs_flash_init()
+I (536) LAB_WIFI_SCAN: [FORENSIC]: nvs_flash_init() returned ESP_OK (0x0)
+I (536) LAB_WIFI_SCAN: [FORENSIC]: Call esp_netif_init()
+I (546) LAB_WIFI_SCAN: [FORENSIC]: esp_netif_init() returned ESP_OK (0x0)
+I (546) LAB_WIFI_SCAN: [FORENSIC]: Call esp_event_loop_create_default()
+I (556) LAB_WIFI_SCAN: [FORENSIC]: esp_event_loop_create_default() returned ESP_OK (0x0)
+I (556) LAB_WIFI_SCAN: [FORENSIC]: Call esp_netif_create_default_wifi_sta()
+I (566) LAB_WIFI_SCAN: [FORENSIC]: esp_netif_create_default_wifi_sta() returned pointer 0x3ffbca10
+I (576) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_init(&cfg)
+I (586) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_init() returned ESP_OK (0x0)
+I (586) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)
+I (596) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_set_mode() returned ESP_OK (0x0)
+I (596) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_start()
+I (676) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)
+I (676) LAB_WIFI_SCAN: ==================================================================
+I (676) LAB_WIFI_SCAN:   Lab 5.1: Wi-Fi Connection and Scanning Phase (ESP-IDF Forensic)
+I (686) LAB_WIFI_SCAN: ==================================================================
+I (686) LAB_WIFI_SCAN: ------------------------------------------------------------------
+I (696) LAB_WIFI_SCAN: >>> Experiment 5.1.1: General AP Scan (All Channels)
+I (696) LAB_WIFI_SCAN: ------------------------------------------------------------------
+I (706) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_start(scan_config, block=true)
+I (2288) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0) [Duration: 1582 ms]
+I (2288) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_get_ap_num(&ap_count)
+I (2298) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_num() returned ESP_OK (0x0), ap_count=12
+I (2298) LAB_WIFI_SCAN: [STATUS]: Scan SUCCESS
+I (2308) LAB_WIFI_SCAN: [AP COUNT]: 12 network(s) found
+I (2308) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_get_ap_records(&number, ap_info)
+I (2318) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_records() returned ESP_OK (0x0), records=12
+
+--------------------------------------------------------------------------------------------------
+No.  | SSID                     | MAC Address (BSSID) | RSSI   | Chan | Encryption Type     
+--------------------------------------------------------------------------------------------------
+1    | KMITL-WiFi               | 34:2C:C4:8A:12:F0   | -48 dBm| 1    | WPA2_ENTERPRISE     
+2    | IoT_SmartLab_2.4G        | B0:A7:32:15:4D:2C   | -54 dBm| 6    | WPA2_PSK            
+3    | TrueGigatex_2.4G_A1      | 70:D9:23:6B:88:94   | -66 dBm| 11   | WPA2_WPA3_PSK       
+4    | AIS_SUPER_WiFi           | 2C:39:96:4E:91:02   | -73 dBm| 1    | WPA2_PSK            
+5    | <Hidden SSID>            | E8:65:D4:A0:18:7E   | -81 dBm| 6    | WPA2_PSK            
+--------------------------------------------------------------------------------------------------
+
+I (3328) LAB_WIFI_SCAN: ------------------------------------------------------------------
+I (3328) LAB_WIFI_SCAN: >>> Experiment 5.1.2: Channel-Specific Scan (Channel 1)
+I (3338) LAB_WIFI_SCAN: ------------------------------------------------------------------
+I (3338) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_start(scan_config, block=true)
+I (3472) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0) [Duration: 134 ms]
+I (3472) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_get_ap_num(&ap_count)
+I (3482) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_num() returned ESP_OK (0x0), ap_count=3
+I (3482) LAB_WIFI_SCAN: [STATUS]: Scan SUCCESS
+I (3492) LAB_WIFI_SCAN: [AP COUNT]: 3 network(s) found
+
+I (4502) LAB_WIFI_SCAN: ------------------------------------------------------------------
+I (4502) LAB_WIFI_SCAN: >>> Experiment 5.1.3: Targeted SSID Scan - Existing ("KMITL-WiFi")
+I (4512) LAB_WIFI_SCAN: ------------------------------------------------------------------
+I (4512) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_start(scan_config, block=true)
+I (6076) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0) [Duration: 1564 ms]
+I (6076) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_get_ap_num(&ap_count)
+I (6086) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_num() returned ESP_OK (0x0), ap_count=1
+I (6086) LAB_WIFI_SCAN: [STATUS]: Scan SUCCESS
+I (6096) LAB_WIFI_SCAN: [AP COUNT]: 1 network(s) found
+
+I (7106) LAB_WIFI_SCAN: ------------------------------------------------------------------
+I (7106) LAB_WIFI_SCAN: >>> Experiment 5.1.4: Targeted SSID Scan - Non-Existent ("NON_EXISTENT_AP_9999")
+I (7116) LAB_WIFI_SCAN: ------------------------------------------------------------------
+I (7116) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_start(scan_config, block=true)
+I (8667) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0) [Duration: 1551 ms]
+I (8667) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_get_ap_num(&ap_count)
+I (8677) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_num() returned ESP_OK (0x0), ap_count=0
+I (8677) LAB_WIFI_SCAN: [STATUS]: Scan SUCCESS
+I (8687) LAB_WIFI_SCAN: [AP COUNT]: 0 network(s) found
+W (8687) LAB_WIFI_SCAN: [NOTE]: No Access Point found matching the criteria.
+I (8697) LAB_WIFI_SCAN: ==================================================================
+I (8697) LAB_WIFI_SCAN:   [Phase 1 Completed: Wi-Fi Scan Finished]
+I (8707) LAB_WIFI_SCAN:   Program stopped after scanning. Auth/Assoc Phase not started.
+I (8707) LAB_WIFI_SCAN: ==================================================================
+```
+
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)

@@ -21,6 +21,68 @@
 | **Auth Mode Enum** | 3 (WIFI_AUTH_WPA2_PSK) |
 | **Association ID (AID)** | 1 |
 
+### 6.3 ผลลัพธ์จาก Serial Monitor Console (Forensic Output Log)
+
+```text
+I (516) main_task: Calling app_main()
+I (516) LAB_AUTH_ASSOC: [FORENSIC]: Call nvs_flash_init()
+I (536) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_netif_init()
+I (546) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_event_loop_create_default()
+I (546) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_netif_create_default_wifi_sta()
+I (556) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_init(&cfg)
+I (576) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_event_handler_instance_register(WIFI_EVENT)
+I (586) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)
+I (596) LAB_AUTH_ASSOC: ==================================================================
+I (596) LAB_AUTH_ASSOC:   Lab 5.3: Wi-Fi Authentication & Association Phase (ESP-IDF Forensic)
+I (606) LAB_AUTH_ASSOC: ==================================================================
+
+I (606) LAB_AUTH_ASSOC: ------------------------------------------------------------------
+I (616) LAB_AUTH_ASSOC: >>> Experiment 5.3.1: Link-Layer Auth & Assoc Phase Test
+I (616) LAB_AUTH_ASSOC: ------------------------------------------------------------------
+I (626) LAB_AUTH_ASSOC:   Target SSID    : "IoT_SmartLab_2.4G"
+I (626) LAB_AUTH_ASSOC:   Target Password: "Correct_Password_123"
+I (636) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_stop()
+I (646) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (656) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_start()
+I (726) LAB_AUTH_ASSOC: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (726) LAB_AUTH_ASSOC: [FORENSIC]: Initiating 802.11 Link-Layer Connection (Auth & Assoc)...
+I (736) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_connect()
+I (746) LAB_AUTH_ASSOC: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)
+I (2480) LAB_AUTH_ASSOC: =======================================================
+I (2480) LAB_AUTH_ASSOC: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (2480) LAB_AUTH_ASSOC:   [SUCCESS]: Phase 2 (Auth) & Phase 3 (Assoc) COMPLETED!
+I (2490) LAB_AUTH_ASSOC:   -> Connected SSID        : IoT_SmartLab_2.4G
+I (2490) LAB_AUTH_ASSOC:   -> BSSID (MAC Address)   : B0:A7:32:15:4D:2C
+I (2500) LAB_AUTH_ASSOC:   -> Channel               : 6
+I (2500) LAB_AUTH_ASSOC:   -> Auth Mode             : 3
+I (2510) LAB_AUTH_ASSOC:   -> Association ID (AID)  : 1
+I (2510) LAB_AUTH_ASSOC: =======================================================
+I (2520) LAB_AUTH_ASSOC: [RESULT]: TEST PASSED - Phase 2 (Auth) & Phase 3 (Assoc) Successful!
+
+I (4530) LAB_AUTH_ASSOC: ------------------------------------------------------------------
+I (4530) LAB_AUTH_ASSOC: >>> Experiment 5.3.2: Link-Layer Test - Non-Existent AP
+I (4540) LAB_AUTH_ASSOC: ------------------------------------------------------------------
+I (4540) LAB_AUTH_ASSOC:   Target SSID    : "NON_EXISTENT_AP_9999"
+I (4550) LAB_AUTH_ASSOC:   Target Password: "12345678"
+I (4550) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_stop()
+I (4560) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (4570) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_start()
+I (4640) LAB_AUTH_ASSOC: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (4640) LAB_AUTH_ASSOC: [FORENSIC]: Initiating 802.11 Link-Layer Connection (Auth & Assoc)...
+I (4650) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_connect()
+W (7180) LAB_AUTH_ASSOC: =======================================================
+W (7180) LAB_AUTH_ASSOC: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (7190) LAB_AUTH_ASSOC:   -> Target SSID          : NON_EXISTENT_AP_9999
+W (7190) LAB_AUTH_ASSOC:   -> Reason Code (Decimal): 201
+W (7200) LAB_AUTH_ASSOC:   -> Reason Code (Hex)    : 0xC9
+W (7200) LAB_AUTH_ASSOC:   -> Reason Diagnosis     : WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]
+W (7210) LAB_AUTH_ASSOC: =======================================================
+W (7210) LAB_AUTH_ASSOC: [RESULT]: TEST FAILED - Link-Layer connection failed.
+I (7220) LAB_AUTH_ASSOC: ==================================================================
+I (7220) LAB_AUTH_ASSOC:   [Phase 2 & Phase 3 Completed: Link-Layer Auth & Assoc Finished]
+I (7230) LAB_AUTH_ASSOC: ==================================================================
+```
+
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)

@@ -23,6 +23,101 @@
 | **Subnet Mask** | 255.255.255.0 |
 | **Default Gateway** | 192.168.1.1 |
 
+### 6.3 ผลลัพธ์จาก Serial Monitor Console (Forensic Output Log)
+
+```text
+I (516) main_task: Calling app_main()
+I (516) LAB_WIFI_CONN: [FORENSIC]: Call nvs_flash_init()
+I (536) LAB_WIFI_CONN: [FORENSIC]: nvs_flash_init() returned ESP_OK (0x0)
+I (536) LAB_WIFI_CONN: [FORENSIC]: Call esp_netif_init()
+I (546) LAB_WIFI_CONN: [FORENSIC]: Call esp_event_loop_create_default()
+I (546) LAB_WIFI_CONN: [FORENSIC]: Call esp_netif_create_default_wifi_sta()
+I (556) LAB_WIFI_CONN: [FORENSIC]: esp_netif_create_default_wifi_sta() returned 0x3ffbca10
+I (566) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_init(&cfg)
+I (586) LAB_WIFI_CONN: [FORENSIC]: Call esp_event_handler_instance_register(WIFI_EVENT)
+I (586) LAB_WIFI_CONN: [FORENSIC]: Call esp_event_handler_instance_register(IP_EVENT)
+I (596) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)
+I (606) LAB_WIFI_CONN: ==================================================================
+I (606) LAB_WIFI_CONN:   Lab 5.2: Wi-Fi Connection & IP Assignment (ESP-IDF Forensic)
+I (616) LAB_WIFI_CONN: ==================================================================
+
+I (616) LAB_WIFI_CONN: ------------------------------------------------------------------
+I (626) LAB_WIFI_CONN: >>> Experiment 5.2.1: Connection Test - Correct Credentials
+I (626) LAB_WIFI_CONN: ------------------------------------------------------------------
+I (636) LAB_WIFI_CONN:   Target SSID: "IoT_SmartLab_2.4G"
+I (636) LAB_WIFI_CONN:   Target Password: "Correct_Password_123"
+I (646) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_stop()
+I (656) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (666) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_set_config() returned ESP_OK (0x0)
+I (666) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_start()
+I (736) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)
+I (746) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (746) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+I (756) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)
+I (2450) LAB_WIFI_CONN: =======================================================
+I (2450) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (2450) LAB_WIFI_CONN:   -> Connected to SSID : IoT_SmartLab_2.4G
+I (2460) LAB_WIFI_CONN:   -> BSSID            : B0:A7:32:15:4D:2C
+I (2460) LAB_WIFI_CONN:   -> Channel          : 6
+I (2470) LAB_WIFI_CONN:   -> Auth Mode        : 3
+I (2470) LAB_WIFI_CONN: =======================================================
+I (3210) LAB_WIFI_CONN: =======================================================
+I (3210) LAB_WIFI_CONN: [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!
+I (3210) LAB_WIFI_CONN:   -> IP Address : 192.168.1.135
+I (3220) LAB_WIFI_CONN:   -> Netmask    : 255.255.255.0
+I (3220) LAB_WIFI_CONN:   -> Gateway    : 192.168.1.1
+I (3230) LAB_WIFI_CONN: =======================================================
+I (3230) LAB_WIFI_CONN: [RESULT]: TEST PASSED - Connected to AP successfully!
+
+I (5240) LAB_WIFI_CONN: ------------------------------------------------------------------
+I (5240) LAB_WIFI_CONN: >>> Experiment 5.2.2: Connection Test - Wrong SSID (No AP Found)
+I (5250) LAB_WIFI_CONN: ------------------------------------------------------------------
+I (5250) LAB_WIFI_CONN:   Target SSID: "NON_EXISTENT_SSID_9999"
+I (5260) LAB_WIFI_CONN:   Target Password: "12345678"
+I (5260) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_stop()
+I (5270) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (5280) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_start()
+I (5350) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (5350) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+W (7890) LAB_WIFI_CONN: =======================================================
+W (7890) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (7900) LAB_WIFI_CONN:   -> Target SSID          : NON_EXISTENT_SSID_9999
+W (7900) LAB_WIFI_CONN:   -> Reason Code (Decimal): 201
+W (7910) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0xC9
+W (7910) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_NO_AP_FOUND (201)
+W (7920) LAB_WIFI_CONN: =======================================================
+W (7920) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.
+
+I (9930) LAB_WIFI_CONN: ------------------------------------------------------------------
+I (9930) LAB_WIFI_CONN: >>> Experiment 5.2.3: Connection Test - Wrong Password (Auth/Handshake Fail)
+I (9940) LAB_WIFI_CONN: ------------------------------------------------------------------
+I (9940) LAB_WIFI_CONN:   Target SSID: "IoT_SmartLab_2.4G"
+I (9950) LAB_WIFI_CONN:   Target Password: "WRONG_PASS_9999"
+I (9950) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_stop()
+I (9960) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (9970) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_start()
+I (10040) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (10040) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+I (11480) LAB_WIFI_CONN: =======================================================
+I (11480) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (11480) LAB_WIFI_CONN:   -> Connected to SSID : IoT_SmartLab_2.4G
+I (11490) LAB_WIFI_CONN:   -> BSSID            : B0:A7:32:15:4D:2C
+I (11490) LAB_WIFI_CONN:   -> Channel          : 6
+I (11500) LAB_WIFI_CONN:   -> Auth Mode        : 3
+I (11500) LAB_WIFI_CONN: =======================================================
+W (13620) LAB_WIFI_CONN: =======================================================
+W (13620) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (13620) LAB_WIFI_CONN:   -> Target SSID          : IoT_SmartLab_2.4G
+W (13630) LAB_WIFI_CONN:   -> Reason Code (Decimal): 15
+W (13630) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0x0F
+W (13640) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_HANDSHAKE_TIMEOUT (15)
+W (13640) LAB_WIFI_CONN: =======================================================
+W (13650) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.
+I (13660) LAB_WIFI_CONN: ==================================================================
+I (13660) LAB_WIFI_CONN:   [Phase 2/3/4/5 Completed: Wi-Fi Connection Lab Finished]
+I (13670) LAB_WIFI_CONN: ==================================================================
+```
+
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)

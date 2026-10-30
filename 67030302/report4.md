@@ -19,6 +19,83 @@
 | **Subnet Mask** | 255.255.255.0 |
 | **Default Gateway** | 192.168.1.1 |
 
+### 6.3 ผลลัพธ์จาก Serial Monitor Console (Forensic Output Log)
+
+```text
+I (516) main_task: Calling app_main()
+I (516) LAB_HANDSHAKE_IP: [FORENSIC]: Call nvs_flash_init()
+I (536) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_netif_init()
+I (546) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_event_loop_create_default()
+I (546) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_netif_create_default_wifi_sta()
+I (556) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_init(&cfg)
+I (576) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_event_handler_instance_register(WIFI_EVENT)
+I (586) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_event_handler_instance_register(IP_EVENT)
+I (596) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)
+I (606) LAB_HANDSHAKE_IP: ==================================================================
+I (606) LAB_HANDSHAKE_IP:   Lab 5.4: 4-Way Handshake & IP Assignment Phase (ESP-IDF Forensic)
+I (616) LAB_HANDSHAKE_IP: ==================================================================
+
+I (616) LAB_HANDSHAKE_IP: ------------------------------------------------------------------
+I (626) LAB_HANDSHAKE_IP: >>> Experiment 5.4.1: Handshake & IP Test - Correct Password
+I (626) LAB_HANDSHAKE_IP: ------------------------------------------------------------------
+I (636) LAB_HANDSHAKE_IP:   Target SSID    : "IoT_SmartLab_2.4G"
+I (636) LAB_HANDSHAKE_IP:   Target Password: "Correct_Password_123"
+I (646) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_stop()
+I (656) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (666) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_start()
+I (736) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (736) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_connect()
+I (2450) LAB_HANDSHAKE_IP: =======================================================
+I (2450) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (2450) LAB_HANDSHAKE_IP:   -> Phase 2 (Auth) & Phase 3 (Assoc) PASSED
+I (2460) LAB_HANDSHAKE_IP:   -> Connected SSID  : IoT_SmartLab_2.4G
+I (2460) LAB_HANDSHAKE_IP:   -> BSSID           : B0:A7:32:15:4D:2C
+I (2470) LAB_HANDSHAKE_IP:   -> Channel         : 6
+I (2470) LAB_HANDSHAKE_IP:   -> Association ID  : 1
+I (2480) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 4: 4-Way EAPOL Key Exchange...
+I (2480) LAB_HANDSHAKE_IP: =======================================================
+I (2520) wifi:security: WPA2-PSK, phy: bgn, rssi: -48, cipher(pairwise:0x3, group:0x3), pmf:1
+I (3210) LAB_HANDSHAKE_IP: =======================================================
+I (3210) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!
+I (3210) LAB_HANDSHAKE_IP:   [SUCCESS]: Phase 4 (4-Way Handshake) & Phase 5 (DHCP IP) COMPLETED!
+I (3220) LAB_HANDSHAKE_IP:   -> Allocated IP Address : 192.168.1.135
+I (3220) LAB_HANDSHAKE_IP:   -> Subnet Mask          : 255.255.255.0
+I (3230) LAB_HANDSHAKE_IP:   -> Default Gateway      : 192.168.1.1
+I (3230) LAB_HANDSHAKE_IP: =======================================================
+I (3240) LAB_HANDSHAKE_IP: [RESULT]: TEST PASSED - 4-Way Handshake & DHCP IP Assignment Successful!
+
+I (5250) LAB_HANDSHAKE_IP: ------------------------------------------------------------------
+I (5250) LAB_HANDSHAKE_IP: >>> Experiment 5.4.2: Handshake Test - Incorrect Password
+I (5260) LAB_HANDSHAKE_IP: ------------------------------------------------------------------
+I (5260) LAB_HANDSHAKE_IP:   Target SSID    : "IoT_SmartLab_2.4G"
+I (5270) LAB_HANDSHAKE_IP:   Target Password: "WRONG_PASSWORD_1234"
+I (5270) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_stop()
+I (5280) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (5290) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_start()
+I (5360) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (5360) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_connect()
+I (6810) LAB_HANDSHAKE_IP: =======================================================
+I (6810) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (6810) LAB_HANDSHAKE_IP:   -> Phase 2 (Auth) & Phase 3 (Assoc) PASSED
+I (6820) LAB_HANDSHAKE_IP:   -> Connected SSID  : IoT_SmartLab_2.4G
+I (6820) LAB_HANDSHAKE_IP:   -> BSSID           : B0:A7:32:15:4D:2C
+I (6830) LAB_HANDSHAKE_IP:   -> Channel         : 6
+I (6830) LAB_HANDSHAKE_IP:   -> Association ID  : 1
+I (6840) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 4: 4-Way EAPOL Key Exchange...
+I (6840) LAB_HANDSHAKE_IP: =======================================================
+W (8950) LAB_HANDSHAKE_IP: =======================================================
+W (8950) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (8960) LAB_HANDSHAKE_IP:   -> Target SSID          : IoT_SmartLab_2.4G
+W (8960) LAB_HANDSHAKE_IP:   -> Reason Code (Decimal): 204
+W (8970) LAB_HANDSHAKE_IP:   -> Reason Code (Hex)    : 0xCC
+W (8970) LAB_HANDSHAKE_IP:   -> Reason Diagnosis     : WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT (204) [Phase 4: Wrong Password]
+W (8980) LAB_HANDSHAKE_IP: =======================================================
+W (8980) LAB_HANDSHAKE_IP: [RESULT]: TEST FAILED - Disconnected during Handshake or Auth.
+I (8990) LAB_HANDSHAKE_IP: ==================================================================
+I (8990) LAB_HANDSHAKE_IP:   [Phase 4 & Phase 5 Completed: Wi-Fi Handshake & IP Lab Finished]
+I (9000) LAB_HANDSHAKE_IP: ==================================================================
+```
+
 ---
 
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
