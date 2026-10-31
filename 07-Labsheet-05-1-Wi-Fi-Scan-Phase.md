@@ -420,7 +420,7 @@ void app_main(void) {
 |   2   |Khumthong_TOT                      |30:AE:A4:D4:E5:F6                     |       -52                    |          6             |           WPA2_PSK                          |
 |   3   |KT_Office_WiFi                     |7C:9E:BD:12:34:56                     |         -61                  |          11             |   WPA2_WPA3_PSK                                  
 |   4   |HUAWEI-5G_94SJ|50:C7:BF:65:43:21  |-70                          |1|                  WPA2_PSK                    |
-|   5   |Seoul                      |8C:DE:F9:AB:CD:EF                     |-80|                       |          6                           |OPEN (No Password)
+|   5   |Seoul                      |8C:DE:F9:AB:CD:EF                     |-80|           6            |      OPEN (No Password)                               |
 
 ---
 
