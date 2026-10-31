@@ -1,0 +1,44 @@
+I (485) main_task: Calling app_main()
+I (495) LAB_HANDSHAKE_IP: ==================================================================
+I (495) LAB_HANDSHAKE_IP:   Lab 5.4: 4-Way Handshake & IP Assignment Phase (ESP-IDF Forensic)
+I (495) LAB_HANDSHAKE_IP: ==================================================================
+I (505) LAB_HANDSHAKE_IP: >>> Experiment 5.4.1: Handshake & IP Test - Correct Password
+I (515) LAB_HANDSHAKE_IP:   Target SSID    : "Ittipat Sutthinuanp"
+I (525) LAB_HANDSHAKE_IP:   Target Password: "67030360pass"
+I (535) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_connect()
+I (785) wifi:state: init -> auth (b0)
+I (795) wifi:state: auth -> assoc (0)
+I (805) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (815) LAB_HANDSHAKE_IP:   -> Phase 2 (Auth) & Phase 3 (Assoc) PASSED
+I (825) LAB_HANDSHAKE_IP:   -> Association ID  : 4
+I (825) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 4: 4-Way EAPOL Key Exchange...
+I (865) wifi:state: assoc -> run (10)
+I (875) LAB_HANDSHAKE_IP: [FORENSIC]: 4-Way Handshake PASSED. PTK/GTK Keys Installed!
+I (885) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 5: DHCP DORA Process...
+I (1825) esp_netif_handlers: sta ip: 192.168.43.160, mask: 255.255.255.0, gw: 192.168.43.1
+I (1825) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!
+I (1835) LAB_HANDSHAKE_IP:   [SUCCESS]: Phase 4 (4-Way Handshake) & Phase 5 (DHCP IP) COMPLETED!
+I (1835) LAB_HANDSHAKE_IP:   -> Allocated IP Address : 192.168.43.160
+I (1845) LAB_HANDSHAKE_IP:   -> Subnet Mask          : 255.255.255.0
+I (1845) LAB_HANDSHAKE_IP:   -> Default Gateway      : 192.168.43.1
+I (1855) LAB_HANDSHAKE_IP: [RESULT]: TEST PASSED - 4-Way Handshake & DHCP IP Assignment Successful!
+
+I (5305) LAB_HANDSHAKE_IP: >>> Experiment 5.4.2: Handshake Test - Incorrect Password
+I (5315) LAB_HANDSHAKE_IP:   Target SSID    : "Ittipat Sutthinuanp"
+I (5325) LAB_HANDSHAKE_IP:   Target Password: "WRONG_PASSWORD_1234"
+I (5335) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_connect()
+I (5585) wifi:state: init -> auth (b0)
+I (5595) wifi:state: auth -> assoc (0)
+I (5605) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (5615) LAB_HANDSHAKE_IP:   -> Association ID  : 4
+I (5625) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 4: 4-Way EAPOL Key Exchange...
+W (7845) wifi:4way handshake timeout
+W (7845) LAB_HANDSHAKE_IP: =======================================================
+W (7845) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (7855) LAB_HANDSHAKE_IP:   -> Target SSID          : Ittipat Sutthinuanp
+W (7855) LAB_HANDSHAKE_IP:   -> Reason Code (Decimal): 15
+W (7865) LAB_HANDSHAKE_IP:   -> Reason Code (Hex)    : 0x0F
+W (7865) LAB_HANDSHAKE_IP:   -> Reason Diagnosis     : WIFI_REASON_HANDSHAKE_TIMEOUT (15) [Phase 4: MIC Mismatch]
+W (7875) LAB_HANDSHAKE_IP: =======================================================
+W (7885) LAB_HANDSHAKE_IP: [RESULT]: TEST FAILED - Disconnected during Handshake or Auth.
+I (7895) LAB_HANDSHAKE_IP:   [Phase 4 & Phase 5 Completed: Wi-Fi Handshake & IP Lab Finished]

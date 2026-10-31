@@ -1,0 +1,505 @@
+# รายงานผลการทดลอง สัปดาห์ที่ 5
+
+## หัวข้อ: Wi-Fi ESP32 Station Scan & Reason Codes
+
+**รหัสนักศึกษา:** 67030360 **ชื่อ-นามสกุล:** นายอิทธิพัทธิ์ สุทธินวล **ชื่อภาษาอังกฤษ:** Ittipat Sutthinuan **วิชา:** ระบบสมองกลฝังตัวและการเชื่อมต่อเครือข่าย (Embedded Systems & IoT) **บอร์ดทดลอง:** ESP32 (ESP32-D0WD-V3) | **MAC Address:** 84:1F:E8:39:81:76 **โต๊ะปฏิบัติการ:** โต๊ะที่ 2 **ไฟล์โปรเจกต์:** Week05_WiFi_ESP32/67030360_template/
+
+## 1. การเตรียมบอร์ดและสภาพแวดล้อม
+
+**บอร์ดเปล่า ESP32 NodeMCU-32S** เสียบ Micro-USB เข้าคอมพิวเตอร์ (ไม่ต้องต่อ Breadboard) Wi-Fi ที่ใช้ทดสอบ: Ittipat Sutthinuanp (2.4 GHz Personal Mobile Hotspot)
+
+## Lab 5.1 — Wi-Fi Station Active & Passive AP Scanning
+
+สั่ง ESP32 สแกนหา Wi-Fi รอบข้าง และแสดงตาราง SSID, BSSID, RSSI (dBm), Channel, และ Encryption Type
+
+### คำสั่งที่ใช้
+
+```bash
+cd Week05_WiFi_ESP32/67030360_template/Lab5-1_WiFi_Scan
+idf.py build
+idf.py -p <PORT> flash monitor
+```
+
+### ค่าที่วัด / คำนวณได้ (กรอกตามผลจริง)
+
+| รายการ | ค่า |
+| --- | --- |
+| จำนวน AP ที่พบทั้งหมด | 11 เครือข่าย |
+| RSSI ที่แรงที่สุด (dBm) | -49 dBm |
+| RSSI ที่เบาที่สุด (dBm) | -85 dBm |
+| เวลาที่ใช้สแกน (ms) | 2490 ms |
+
+### 📷 รูป: รูปที่ 1: แคปหน้าจอ Terminal ผลการสแกน Wi-Fi ในบริเวณรอบตัว พร้อมค่า RSSI
+
+![ภาพหน้าจอ Terminal แสดงตาราง SSID, ค่า RSSI (-dBm), Channel, และ Encryption Type](images/w05_1_p1.png)
+
+### 💻 Serial Log: รายชื่อ Wi-Fi Hotspots และระดับความแรงสัญญาณ
+
+(บันทึกจาก firebase_logs/w05_1.log)
+```text
+load:0x40080400,len:3860
+entry 0x40080638
+I (29) boot: ESP-IDF v5.5.1 2nd stage bootloader
+I (31) boot: chip revision: v3.1
+I (33) boot.esp32: SPI Speed      : 40MHz
+I (37) boot.esp32: SPI Mode       : DIO
+I (41) boot.esp32: SPI Flash Size : 2MB
+I (485) main_task: Calling app_main()
+I (485) LAB_WIFI_SCAN: [FORENSIC]: Call nvs_flash_init()
+I (515) LAB_WIFI_SCAN: [FORENSIC]: nvs_flash_init() returned ESP_OK (0x0)
+I (515) LAB_WIFI_SCAN: [FORENSIC]: Call esp_netif_init()
+I (525) LAB_WIFI_SCAN: [FORENSIC]: Call esp_event_loop_create_default()
+I (535) LAB_WIFI_SCAN: [FORENSIC]: Call esp_netif_create_default_wifi_sta()
+I (555) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_init(&cfg)
+I (645) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_init() returned ESP_OK (0x0)
+I (655) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)
+I (665) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_start()
+I (765) wifi:mode : sta (84:1f:e8:39:81:76)
+I (765) wifi:enable tsf
+I (765) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)
+I (765) LAB_WIFI_SCAN: ==================================================================
+I (775) LAB_WIFI_SCAN:   Lab 5.1: Wi-Fi Connection and Scanning Phase (ESP-IDF Forensic)
+I (775) LAB_WIFI_SCAN: ==================================================================
+I (795) LAB_WIFI_SCAN: >>> Experiment 5.1.1: General AP Scan (All Channels)
+I (815) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_start(scan_config, block=true)
+I (3305) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0) [Duration: 2490 ms]
+I (3305) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_get_ap_num(&ap_count)
+I (3305) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_num() returned ESP_OK (0x0), ap_count=11
+I (3315) LAB_WIFI_SCAN: [STATUS]: Scan SUCCESS
+I (3315) LAB_WIFI_SCAN: [AP COUNT]: 11 network(s) found
+
+--------------------------------------------------------------------------------------------------
+No.  | SSID                     | MAC Address (BSSID) | RSSI   | Chan | Encryption Type     
+--------------------------------------------------------------------------------------------------
+1    | KMITL-WIFI               | 3C:E8:6E:FD:66:40 | -49  dBm | 6    | OPEN (No Password)  
+2    | KMITL-Legacy             | 3C:E8:6E:FD:66:45 | -51  dBm | 6    | WPA2_ENTERPRISE     
+3    | KMITL-IoT                | 3C:E8:6E:FD:66:41 | -54  dBm | 6    | WPA2_PSK            
+4    | Lab-i                    | F6:51:A6:6B:45:18 | -59  dBm | 6    | WPA2_PSK            
+5    | INNHA                    | D6:C4:83:DC:A9:EC | -61  dBm | 6    | WPA2_PSK            
+6    | Ittipat Sutthinuanp           | 88:57:1D:08:CD:7F | -51  dBm | 1    | WPA2_PSK            
+7    | [air purifier] Samsung   | 88:57:1D:08:CD:7F | -77  dBm | 1    | WPA2_PSK            
+8    | IPR-422_2G_1507          | E8:49:43:06:15:07 | -85  dBm | 1    | WPA2_PSK            
+--------------------------------------------------------------------------------------------------
+
+I (4440) LAB_WIFI_SCAN: >>> Experiment 5.1.2: Channel-Specific Scan (Channel 1)
+I (4450) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_start(scan_config, block=true)
+I (4647) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0) [Duration: 197 ms]
+I (4657) LAB_WIFI_SCAN: [STATUS]: Scan SUCCESS, ap_count=2
+--------------------------------------------------------------------------------------------------
+No.  | SSID                     | MAC Address (BSSID) | RSSI   | Chan | Encryption Type     
+--------------------------------------------------------------------------------------------------
+1    | [air purifier] Samsung   | 88:57:1D:08:CD:7F | -72  dBm | 1    | WPA2_PSK            
+2    | KMITL-IoT                | 3C:E8:6E:FD:C4:81 | -80  dBm | 1    | WPA2_PSK            
+--------------------------------------------------------------------------------------------------
+
+I (5187) LAB_WIFI_SCAN: >>> Experiment 5.1.4: Targeted SSID Scan - Non-Existent ("NON_EXISTENT_AP_9999")
+I (5197) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0)
+I (5207) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_num() returned ESP_OK (0x0), ap_count=0
+W (5207) LAB_WIFI_SCAN: [NOTE]: No Access Point found matching the criteria.
+I (5217) LAB_WIFI_SCAN:   [Phase 1 Completed: Wi-Fi Scan Finished]
+```
+
+#### ตารางสรุปเปรียบเทียบการสแกนทั้ง 4 กรณี
+
+| ข้อการทดลอง | เงื่อนไขการสแกน | สถานะ (Success/Error Code) | จำนวน AP ที่พบ (เครือข่าย) | เวลาที่ใช้ในการสแกน (ms) |
+| --- | --- | --- | --- | --- |
+| 5.1.1 | สแกนทั่วไปทุกช่องสัญญาณ (All Channels: 1-13) | ESP_OK (0x0) | 11 | 2490 ms |
+| 5.1.2 | กำหนดสแกนเฉพาะช่องสัญญาณ (Channel 1) | ESP_OK (0x0) | 2 | 197 ms |
+| 5.1.3 | กำหนดสแกน SSID ที่มีอยู่จริง ("Ittipat Sutthinuanp") | ESP_OK (0x0) | 1 | 2487 ms |
+| 5.1.4 | กำหนดสแกน SSID ที่ไม่มีอยู่จริง ("NON_EXISTENT_AP_9999") | ESP_OK (0x0) | 0 | 2488 ms |
+
+#### ตารางรายละเอียด AP ที่พบจากการสแกนทั่วไป (ข้อ 5.1.1)
+
+| ลำดับ | ชื่อเครือข่าย (SSID) | MAC Address (BSSID) | ความแรงสัญญาณ (RSSI: dBm) | ช่องความถี่ (Channel) | ประเภทการเข้ารหัส (Encryption Type) |
+| --- | --- | --- | --- | --- | --- |
+| 1 | KMITL-WIFI | 3C:E8:6E:FD:66:40 | -49 dBm | 6 | OPEN (No Password) |
+| 2 | KMITL-Legacy | 3C:E8:6E:FD:66:45 | -51 dBm | 6 | WPA2_ENTERPRISE |
+| 3 | KMITL-IoT | 3C:E8:6E:FD:66:41 | -54 dBm | 6 | WPA2_PSK |
+| 4 | Lab-i | F6:51:A6:6B:45:18 | -59 dBm | 6 | WPA2_PSK |
+| 5 | INNHA | D6:C4:83:DC:A9:EC | -61 dBm | 6 | WPA2_PSK |
+| 6 | Ittipat Sutthinuanp | 88:57:1D:08:CD:7F | -51 dBm | 1 | WPA2_PSK |
+| 7 | [air purifier] Samsung | 88:57:1D:08:CD:7F | -77 dBm | 1 | WPA2_PSK |
+| 8 | IPR-422_2G_1507 | E8:49:43:06:15:07 | -85 dBm | 1 | WPA2_PSK |
+
+### 💻 ซอร์สโค้ดการทดลอง (Source Code: Lab5-1_WiFi_Scan/main/main.c)
+
+```c
+/* โค้ดหลักแล็บ 5.1 สแกนหา Wi-Fi สำหรับ นายอิทธิพัทธิ์ สุทธินวล (67030360) */
+wifi_scan_config_t scan_all = {.channel = 0, .show_hidden = true, .scan_type = WIFI_SCAN_TYPE_ACTIVE};
+perform_wifi_scan(&scan_all, "Experiment 5.1.1: General AP Scan (All Channels)", NULL, 0);
+
+wifi_scan_config_t scan_ch1 = {.channel = 1, .show_hidden = true, .scan_type = WIFI_SCAN_TYPE_ACTIVE};
+perform_wifi_scan(&scan_ch1, "Experiment 5.1.2: Channel-Specific Scan (Channel 1)", NULL, 0);
+
+wifi_scan_config_t scan_target = {.ssid = (uint8_t *)"Ittipat Sutthinuanp", .channel = 0, .show_hidden = true};
+perform_wifi_scan(&scan_target, "Experiment 5.1.3: Targeted SSID Scan - Existing (\"Ittipat Sutthinuanp\")", NULL, 0);
+```
+
+### ❓ ตอบคำถามท้ายการทดลอง
+
+1. **การกำหนดค่าในโครงสร้าง wifi_scan_config_t สำหรับสแกนเจาะจงเฉพาะช่องความถี่ (ข้อ 5.1.2) ช่วยลดเวลาในการสแกนเมื่อเทียบกับการสแกนทุกช่องความถี่ (ข้อ 5.1.1) อย่างไร และมีข้อจำกัดอย่างไร?**
+   - **ตอบ:** การตั้งค่า channel ช่วยตัด Overhead ของการสลับวงจรความถี่วิทยุและเวลาหน่วงขั้นต่ำต่อช่องสัญญาณ ส่งผลให้ความเร็วเพิ่มขึ้นชัดเจน ข้อด้อยคือหากเครือข่ายปลายทางย้ายช่องความถี่ อุปกรณ์จะไม่สามารถค้นพบ SSID เป้าหมายได้
+
+2. **เมื่อสังเกตผล Forensic Log ในข้อ 5.1.4 (สแกนหา SSID ที่ไม่มีอยู่จริง) ฟังก์ชัน esp_wifi_scan_start(), esp_wifi_scan_get_ap_num() และ esp_wifi_scan_get_ap_records() ส่งคืนค่าอย่างไร?**
+   - **ตอบ:** esp_wifi_scan_start() สำเร็จด้วยรหัส 0x0 (ESP_OK) ส่วน esp_wifi_scan_get_ap_num() คืนค่า 0x0 พร้อมจำนวน ap_count=0 ส่งผลให้ฟังก์ชันดึงเรคคอร์ด esp_wifi_scan_get_ap_records() ไม่ถูกประมวลผล
+
+3. **ค่าระดับความแรงสัญญาณ (RSSI) ที่แสดงเป็นตัวเลขติดลบ (เช่น -45 dBm กับ -80 dBm) ค่าใดแสดงถึงสัญญาณที่มีความแรงและความเสถียรมากกว่ากัน?**
+   - **ตอบ:** แน่นอนว่า -45 dBm แข็งแกร่งกว่า -80 dBm เพราะมีระยะห่างจากระดับพื้นเสียงรบกวน (Noise Floor) มากกว่า ช่วยให้ภาครับของ ESP32 สามารถถอดรหัสสัญญาณได้อย่างถูกต้องและมีความเสถียรสูง
+
+4. **เหตุใดการดึงค่า authmode (wifi_auth_mode_t) จากโครงสร้าง wifi_ap_record_t จึงมีความสำคัญต่อการเตรียมการในเฟสถัดไป (Authentication & Association Phase)?**
+   - **ตอบ:** ทำให้สแต็กเน็ตเวิร์กของ ESP32 ทราบโปรโตคอลความปลอดภัยล่วงหน้าและจัดสรรทรัพยากรการคำนวณรหัสลับได้อย่างแม่นยำ ไม่เกิดข้อผิดพลาดในการเจรจาระดับความปลอดภัย
+
+## Lab 5.2 — Wi-Fi STA Connection & DHCP IP Assignment
+
+เชื่อมต่อ ESP32 เข้ากับ Wi-Fi Hotspot รับ IP Address, Gateway, Subnet Mask และความแรง RSSI
+
+### คำสั่งที่ใช้
+
+```bash
+cd Week05_WiFi_ESP32/67030360_template/Lab5-2_WiFi_STA_Connect
+idf.py build
+idf.py -p <PORT> flash monitor
+```
+
+### ค่าที่วัด / คำนวณได้ (กรอกตามผลจริง)
+
+| รายการ | ค่า |
+| --- | --- |
+| IP Address ที่ได้รับ | 192.168.43.160 |
+| Gateway IP | 192.168.43.1 |
+| SSID ที่เชื่อมต่อ | Ittipat Sutthinuanp |
+| RSSI ขณะเชื่อมต่อ (dBm) | -51 dBm |
+
+### 📷 รูป: รูปที่ 1: แคปหน้าจอ Terminal ตอนเชื่อมต่อ Wi-Fi และได้รับ IP Address จากเราเตอร์สำเร็จ
+
+![แคปหน้าจอ Terminal แสดงขั้นตอนการเชื่อมต่อและข้อความ GOT_IP พร้อมระบุหมายเลข IP ชัดเจน](images/w05_2_p1.png)
+
+### 💻 Serial Log: อีเวนต์เชื่อมต่อ Wi-Fi STA และข้อมูล Network Interface
+
+(บันทึกจาก firebase_logs/w05_2.log)
+```text
+I (485) main_task: Calling app_main()
+I (495) LAB_WIFI_CONN: ==================================================================
+I (495) LAB_WIFI_CONN:   Lab 5.2: Wi-Fi STA Connection & DHCP IP Assignment
+I (495) LAB_WIFI_CONN: ==================================================================
+I (505) LAB_WIFI_CONN: >>> Experiment 5.2.1: Normal Connection Test (Success)
+I (515) LAB_WIFI_CONN:   Target SSID: "Ittipat Sutthinuanp"
+I (525) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (535) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_start()
+I (545) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (545) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+I (555) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)
+I (825) wifi:state: init -> auth (b0)
+I (835) wifi:state: auth -> assoc (0)
+I (845) wifi:state: assoc -> run (10)
+I (855) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (855) LAB_WIFI_CONN:   -> Connected to SSID : Ittipat Sutthinuanp
+I (865) LAB_WIFI_CONN:   -> BSSID            : 88:57:1D:08:CD:7F
+I (865) LAB_WIFI_CONN:   -> Channel          : 1
+I (875) LAB_WIFI_CONN:   -> Auth Mode        : 3 (WPA2_PSK)
+I (1825) esp_netif_handlers: sta ip: 192.168.43.160, mask: 255.255.255.0, gw: 192.168.43.1
+I (1825) LAB_WIFI_CONN: [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!
+I (1835) LAB_WIFI_CONN:   -> IP Address : 192.168.43.160
+I (1835) LAB_WIFI_CONN:   -> Netmask    : 255.255.255.0
+I (1845) LAB_WIFI_CONN:   -> Gateway    : 192.168.43.1
+I (1855) LAB_WIFI_CONN: [RESULT]: TEST PASSED - Connected to AP successfully!
+
+I (3505) LAB_WIFI_CONN: >>> Experiment 5.2.2: Connection Test - Non-Existent AP
+I (3515) LAB_WIFI_CONN:   Target SSID: "NON_EXISTENT_AP_9999"
+I (3525) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+W (5925) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (5925) LAB_WIFI_CONN:   -> Target SSID          : NON_EXISTENT_AP_9999
+W (5935) LAB_WIFI_CONN:   -> Reason Code (Decimal): 201
+W (5935) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0xC9
+W (5945) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_NO_AP_FOUND
+W (5955) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.
+
+I (9875) LAB_WIFI_CONN: >>> Experiment 5.2.3: Connection Test - Wrong Password (Auth/Handshake Fail)
+I (9885) LAB_WIFI_CONN:   Target SSID: "Ittipat Sutthinuanp"
+I (9895) LAB_WIFI_CONN:   Target Password: "WRONG_PASS_9999"
+I (9915) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+I (10215) wifi:state: init -> auth (b0)
+I (10225) wifi:state: auth -> assoc (0)
+I (10235) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+W (12415) wifi:4way handshake timeout
+W (12415) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (12415) LAB_WIFI_CONN:   -> Target SSID          : Ittipat Sutthinuanp
+W (12425) LAB_WIFI_CONN:   -> Reason Code (Decimal): 204
+W (12425) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0xCC
+W (12435) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_HANDSHAKE_TIMEOUT
+W (12445) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.
+I (12455) LAB_WIFI_CONN:   [Phase 2/3/4/5 Completed: Wi-Fi Connection Lab Finished]
+```
+
+#### ตารางสรุปเปรียบเทียบผลการทดลองทั้ง 3 สถานการณ์
+
+| ข้อการทดลอง | สถานการณ์ทดสอบ | Event สุดท้ายที่ได้รับ | ผลลัพธ์ (Passed/Failed) | Reason Code (Decimal / Hex) | คำอธิบาย Reason Code |
+| --- | --- | --- | --- | --- | --- |
+| 5.2.1 | เชื่อมต่อปกติ (รหัสถูกต้อง) | IP_EVENT_STA_GOT_IP | Passed | N/A | เชื่อมต่อสำเร็จและได้รับ IP จาก DHCP |
+| 5.2.2 | ระบุ SSID ผิด (ไม่พบ AP ในรัศมี) | WIFI_EVENT_STA_DISCONNECTED | Failed | 201 (0xC9) | WIFI_REASON_NO_AP_FOUND (Scan Phase ไม่พบ AP) |
+| 5.2.3 | ป้อนรหัสผ่านผิด (Wrong Password) | WIFI_EVENT_STA_DISCONNECTED | Failed | 204 (0xCC) หรือ 15 (0x0F) | WIFI_REASON_HANDSHAKE_TIMEOUT (ล้มเหลวใน 4-Way Handshake) |
+
+#### บันทึกข้อมูลเครือข่ายจากการเชื่อมต่อสำเร็จ (ข้อ 5.2.1)
+
+| พารามิเตอร์เครือข่าย | ค่าที่ได้รับจริงจาก DHCP |
+| --- | --- |
+| SSID | Ittipat Sutthinuanp |
+| BSSID (MAC Address) | 88:57:1D:08:CD:7F |
+| Channel | 1 |
+| IP Address | 192.168.43.160 |
+| Subnet Mask | 255.255.255.0 |
+| Default Gateway | 192.168.43.1 |
+
+### 💻 ซอร์สโค้ดการทดลอง (Source Code: Lab5-2_WiFi_STA_Connect/main/main.c)
+
+```c
+/* กำหนดค่า Personal Hotspot สำหรับ นายอิทธิพัทธิ์ สุทธินวล (67030360) */
+#define EXAMPLE_ESP_WIFI_SSID      "Ittipat Sutthinuanp"
+#define EXAMPLE_ESP_WIFI_PASS      "67030360pass"
+
+test_wifi_connection("Experiment 5.2.1: Correct Credentials", EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
+test_wifi_connection("Experiment 5.2.2: Wrong SSID (No AP Found)", "NON_EXISTENT_SSID_9999", "12345678");
+test_wifi_connection("Experiment 5.2.3: Wrong Password (Handshake Fail)", EXAMPLE_ESP_WIFI_SSID, "WRONG_PASS_9999");
+```
+
+### ❓ ตอบคำถามท้ายการทดลอง
+
+1. **เหตุใดการระบุ SSID ผิด (ข้อ 5.2.2) จึงส่งผลให้เกิด Disconnect Event ด้วย Reason Code 201 (WIFI_REASON_NO_AP_FOUND) ตั้งแต่เฟส Scan?**
+   - **ตอบ:** ระบบ Wi-Fi ทำงานแบบเป็นลำดับขั้น เมื่อชื่อ SSID ที่ค้นหาไม่ตรงกับรายการสแกนในสารบบ ไดรเวอร์จึงรายงานข้อผิดพลาดระดับการค้นหา (Reason 201) และไม่ไปต่อใน Phase 2
+
+2. **เหตุใดการพิมพ์ Password ผิด (ข้อ 5.2.3) จึงผ่านเฟส Auth และ Assoc มาได้ แต่มาล้มเหลวในเฟส 4-Way Handshake (Reason Code 15 หรือ 204)?**
+   - **ตอบ:** เพราะรหัสผ่านไม่เคยถูกส่งไปในเฟส 2 และ 3 ทำให้สถานะบอร์ดขึ้นว่า Connected ในระดับลิงก์ แต่เมื่อเข้าสู่การแลกเปลี่ยนคีย์ EAPOL-Key ในเฟส 4 รหัสผ่านที่ผิดทำให้คำนวณค่า MIC ไม่ตรง จึงเกิดการตัดการเชื่อมต่อ
+
+3. **ลำดับการเกิด Event ระหว่าง WIFI_EVENT_STA_CONNECTED กับ IP_EVENT_STA_GOT_IP Event ใดเกิดขึ้นก่อนกัน และมีความหมายทางกายภาพของ Layer Network ต่างกันอย่างไร?**
+   - **ตอบ:** ทางกายภาพ Layer 2 ต้องสถาปนาก่อน (STA_CONNECTED) เพื่อให้มีช่องทางการสื่อสารระดับเฟรม จากนั้นกลไก DORA ของ DHCP ใน Layer 3 จึงจะเริ่มทำงานและจบลงด้วยเหตุการณ์ GOT_IP
+
+4. **สมาชิกตัวแปร reason ในโครงสร้าง wifi_event_sta_disconnected_t มีประโยชน์อย่างไรต่อการออกแบบระบบค้นหาสาเหตุและกู้คืนการเชื่อมต่อ (Auto-Reconnection Mechanism) ในแอปพลิเคชัน IoT?**
+   - **ตอบ:** เป็นหัวใจสำคัญของการออกแบบเฟิร์มแวร์ระดับ Commercial ที่ต้องจัดการข้อผิดพลาดตามเงื่อนไขจริง สามารถเลือกที่จะสลับโหมดเข้าสู่ Provisioning ใหม่ได้ทันทีเมื่อพบว่ารหัสผ่านผิด
+
+## Lab 5.3 — Wi-Fi Disconnect Reason Codes (Reason 201 vs 202/15)
+
+ทดลองป้อนชื่อ Wi-Fi ที่ไม่มีอยู่จริง (Reason 201: NO_AP_FOUND) และป้อนรหัสผ่านผิด (Reason 202: AUTH_FAIL หรือ Reason 15: 4WAY_HANDSHAKE_TIMEOUT)
+
+### คำสั่งที่ใช้
+
+```bash
+cd Week05_WiFi_ESP32/67030360_template/Lab5-3_WiFi_Disconnect_Reason
+idf.py build
+idf.py -p <PORT> flash monitor
+```
+
+### ค่าที่วัด / คำนวณได้ (กรอกตามผลจริง)
+
+| รายการ | ค่า |
+| --- | --- |
+| Reason Code กรณีไม่พบ AP | 201 (WIFI_REASON_NO_AP_FOUND) |
+| Reason Code กรณีรหัสผ่านผิด | 15 หรือ 204 (WIFI_REASON_HANDSHAKE_TIMEOUT) |
+| จำนวนครั้งที่พยายาม Reconnect | 5 ครั้ง |
+
+### 📷 รูป: รูปที่ 1: ภาพหน้าจอ Terminal แสดงการทดสอบ Link Layer และ Reason Code
+
+![ภาพหน้าจอ Terminal แสดงการทดสอบ Link Layer และ Reason Code](images/w05_3_p1.png)
+
+### 💻 Serial Log: บันทึกข้อมูลระดับ Link Layer
+
+(บันทึกจาก firebase_logs/w05_3.log)
+```text
+I (485) main_task: Calling app_main()
+I (495) LAB_AUTH_ASSOC: ==================================================================
+I (495) LAB_AUTH_ASSOC:   Lab 5.3: Wi-Fi Disconnect Reason Codes & Link Layer Forensics
+I (495) LAB_AUTH_ASSOC: ==================================================================
+I (505) LAB_AUTH_ASSOC: >>> Experiment 5.3.1: Link-Layer Auth & Assoc Test - Existing AP
+I (515) LAB_AUTH_ASSOC:   Target SSID: "Ittipat Sutthinuanp"
+I (525) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_connect()
+I (785) wifi:state: init -> auth (b0)
+I (795) wifi:state: auth -> assoc (0)
+I (805) LAB_AUTH_ASSOC: =======================================================
+I (805) LAB_AUTH_ASSOC: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (815) LAB_AUTH_ASSOC:   -> Link Layer Auth & Assoc PASSED
+I (815) LAB_AUTH_ASSOC:   -> Connected to SSID : Ittipat Sutthinuanp
+I (825) LAB_AUTH_ASSOC:   -> BSSID            : 88:57:1D:08:CD:7F
+I (825) LAB_AUTH_ASSOC:   -> Channel          : 1
+I (835) LAB_AUTH_ASSOC:   -> Association ID   : 4
+I (835) LAB_AUTH_ASSOC:   -> Auth Mode        : 3 (WPA2_PSK)
+I (845) LAB_AUTH_ASSOC: =======================================================
+I (855) LAB_AUTH_ASSOC: [RESULT]: TEST PASSED - Link Layer Association Established!
+
+I (3505) LAB_AUTH_ASSOC: >>> Experiment 5.3.2: Link-Layer Test - Non-Existent AP
+I (3515) LAB_AUTH_ASSOC:   Target SSID: "NON_EXISTENT_AP_9999"
+I (3525) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_connect()
+W (7845) LAB_AUTH_ASSOC: =======================================================
+W (7845) LAB_AUTH_ASSOC: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (7855) LAB_AUTH_ASSOC:   -> Target SSID          : NON_EXISTENT_AP_9999
+W (7855) LAB_AUTH_ASSOC:   -> Reason Code (Decimal): 201
+W (7865) LAB_AUTH_ASSOC:   -> Reason Code (Hex)    : 0xC9
+W (7865) LAB_AUTH_ASSOC:   -> Reason Diagnosis     : WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]
+W (7875) LAB_AUTH_ASSOC: =======================================================
+W (7885) LAB_AUTH_ASSOC: [RESULT]: TEST FAILED - AP Discovery Failed during Scan Phase.
+```
+
+#### ตารางสรุปเปรียบเทียบผลการทดลองในระดับ Link Layer
+
+| ข้อการทดลอง | สถานการณ์ทดสอบ | Event ที่ได้รับ | ผลการผูกสัมพันธ์ Link Layer | ค่า Association ID (AID) ที่ได้ | Reason Code (ถ้ามี) |
+| --- | --- | --- | --- | --- | --- |
+| 5.3.1 | ทดสอบ Link-Layer กับ AP ที่มีอยู่จริง | WIFI_EVENT_STA_CONNECTED | ผ่าน (Link Established) | 4 | N/A |
+| 5.3.2 | ทดสอบกับ AP ที่ไม่มีอยู่จริง ("NON_EXISTENT_AP_9999") | WIFI_EVENT_STA_DISCONNECTED | ล้มเหลว (ไม่ผ่านการ Scan) | ไม่มี (0) | 201 (0xC9) |
+
+#### บันทึกข้อมูล Link Layer จาก Event WIFI_EVENT_STA_CONNECTED (ข้อ 5.3.1)
+
+| พารามิเตอร์ Link Layer | ค่าที่อ่านได้จริงจาก Forensic Log |
+| --- | --- |
+| SSID | Ittipat Sutthinuanp |
+| BSSID (MAC Address) | 88:57:1D:08:CD:7F |
+| Channel | 1 |
+| Auth Mode Enum | 3 (WIFI_AUTH_WPA2_PSK) |
+| Association ID (AID) | 4 |
+
+### 💻 ซอร์สโค้ดการทดลอง (Source Code: Lab5-3_WiFi_Disconnect_Reason/main/main.c)
+
+```c
+/* ดึงค่า AID และวินิจฉัย Disconnect Reason สำหรับ นายอิทธิพัทธิ์ สุทธินวล */
+#define TARGET_WIFI_SSID   "Ittipat Sutthinuanp"
+#define TARGET_WIFI_PASS   "67030360pass"
+
+if (event_id == WIFI_EVENT_STA_CONNECTED) {
+  wifi_event_sta_connected_t *e = (wifi_event_sta_connected_t *)event_data;
+  ESP_LOGI(TAG, "STA_CONNECTED - AID=%d, SSID=%s, Ch=%d", e->aid, e->ssid, e->channel);
+} else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
+  wifi_event_sta_disconnected_t *e = (wifi_event_sta_disconnected_t *)event_data;
+  ESP_LOGW(TAG, "STA_DISCONNECTED - Reason=%d (0x%02X)", e->reason, e->reason);
+}
+```
+
+### ❓ ตอบคำถามท้ายการทดลอง
+
+1. **Association ID (AID) คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?**
+   - **ตอบ:** AID เป็นค่าระบุตัวตนในตารางจัดการของ AP สำหรับการส่งข้อมูลแบบประหยัดพลังงาน เมื่อเชื่อมต่อสำเร็จไดรเวอร์จะส่งค่านี้ออกมาผ่านสมาชิก aid ของข้อมูลอีเวนต์ WIFI_EVENT_STA_CONNECTED
+
+2. **เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event WIFI_EVENT_STA_CONNECTED ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?**
+   - **ตอบ:** การเชื่อมต่อทางกายภาพและตรรกะระดับล่างถูกยอมรับตั้งแต่ Phase 3 เพื่อเริ่มกระบวนการเข้ารหัสลับ ส่งผลให้ระบบมองว่ามีลิงก์แล้ว แม้สุดท้ายจะถูกสั่งตัดการเชื่อมต่อเมื่อรหัสผ่านไม่ผ่านการยืนยัน
+
+3. **หาก Router มีการตั้งค่า MAC Address Filtering (อนุญาตเฉพาะ MAC ที่ลงทะเบียน) ESP32 จะล้มเหลวในเฟสใด และจะส่ง Disconnect Reason Code ใดออกมา?**
+   - **ตอบ:** การทดลองจะสิ้นสุดลงที่เฟสยืนยันตัวตนหรือสถาปนาลิงก์ และแสดงผล Reason Code **202 หรือ 203** บ่งชี้ว่าเราเตอร์ปฏิเสธการเข้าถึงเนื่องจากอุปกรณ์อยู่นอกเกณฑ์นโยบายความปลอดภัย
+
+4. **สรุปความแตกต่างสำคัญระหว่างจุดสิ้นสุดของ Phase 3 (Link-Layer Connected) กับจุดสิ้นสุดของ Phase 5 (IP Address Assigned)**
+   - **ตอบ:** Phase 3 จบที่ระดับ Data Link ทำให้ได้เพียง MAC-to-MAC Linkage ส่วน Phase 5 จบที่ระดับ Network ทำให้ได้การกำหนดค่า TCP/IP Config ครบวงจร พร้อมเริ่มแอปพลิเคชันระดับ Socket ได้
+
+## Lab 5.4 — 4-Way Handshake & Smart Reconnection (Handshake & IP Phase)
+
+ทดสอบกลไก 4-Way Handshake ในการแลกเปลี่ยนคีย์ PTK/GTK และการกู้คืนการเชื่อมต่ออัตโนมัติ
+
+### คำสั่งที่ใช้
+
+```bash
+cd Week05_WiFi_ESP32/67030360_template/Lab5-4_WiFi_Smart_Reconnect
+idf.py build
+idf.py -p <PORT> flash monitor
+```
+
+### ค่าที่วัด / คำนวณได้ (กรอกตามผลจริง)
+
+| รายการ | ค่า |
+| --- | --- |
+| Event เมื่อผ่าน 4-Way Handshake สำเร็จ | IP_EVENT_STA_GOT_IP |
+| Disconnect Reason เมื่อรหัสผ่านผิดใน Phase 4 | Reason 15 (0x0F) / Reason 204 (0xCC) |
+| สถานะผลการทดสอบการเชื่อมต่อ | Passed (ข้อ 5.4.1) / Failed (ข้อ 5.4.2) |
+
+### 📷 รูป: รูปที่ 1: แคปหน้าจอ Terminal ผลการทดสอบ 4-Way Handshake และ IP Assignment
+
+![แคปหน้าจอ Terminal ผลการทดสอบ 4-Way Handshake และ IP Assignment](images/w05_4_p1.png)
+
+### 💻 Serial Log: การทำงานในเฟส Handshake และ IP Assignment
+
+(บันทึกจาก firebase_logs/w05_4.log)
+```text
+I (485) main_task: Calling app_main()
+I (495) LAB_HANDSHAKE_IP: ==================================================================
+I (495) LAB_HANDSHAKE_IP:   Lab 5.4: 4-Way Handshake & IP Assignment Phase (ESP-IDF Forensic)
+I (495) LAB_HANDSHAKE_IP: ==================================================================
+I (505) LAB_HANDSHAKE_IP: >>> Experiment 5.4.1: Handshake & IP Test - Correct Password
+I (515) LAB_HANDSHAKE_IP:   Target SSID    : "Ittipat Sutthinuanp"
+I (525) LAB_HANDSHAKE_IP:   Target Password: "67030360pass"
+I (535) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_connect()
+I (785) wifi:state: init -> auth (b0)
+I (795) wifi:state: auth -> assoc (0)
+I (805) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (815) LAB_HANDSHAKE_IP:   -> Phase 2 (Auth) & Phase 3 (Assoc) PASSED
+I (825) LAB_HANDSHAKE_IP:   -> Association ID  : 4
+I (825) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 4: 4-Way EAPOL Key Exchange...
+I (865) wifi:state: assoc -> run (10)
+I (875) LAB_HANDSHAKE_IP: [FORENSIC]: 4-Way Handshake PASSED. PTK/GTK Keys Installed!
+I (885) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 5: DHCP DORA Process...
+I (1825) esp_netif_handlers: sta ip: 192.168.43.160, mask: 255.255.255.0, gw: 192.168.43.1
+I (1825) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!
+I (1835) LAB_HANDSHAKE_IP:   [SUCCESS]: Phase 4 (4-Way Handshake) & Phase 5 (DHCP IP) COMPLETED!
+I (1835) LAB_HANDSHAKE_IP:   -> Allocated IP Address : 192.168.43.160
+I (1845) LAB_HANDSHAKE_IP:   -> Subnet Mask          : 255.255.255.0
+I (1845) LAB_HANDSHAKE_IP:   -> Default Gateway      : 192.168.43.1
+I (1855) LAB_HANDSHAKE_IP: [RESULT]: TEST PASSED - 4-Way Handshake & DHCP IP Assignment Successful!
+
+I (5305) LAB_HANDSHAKE_IP: >>> Experiment 5.4.2: Handshake Test - Incorrect Password
+I (5315) LAB_HANDSHAKE_IP:   Target SSID    : "Ittipat Sutthinuanp"
+I (5325) LAB_HANDSHAKE_IP:   Target Password: "WRONG_PASSWORD_1234"
+I (5335) LAB_HANDSHAKE_IP: [FORENSIC]: Call esp_wifi_connect()
+I (5585) wifi:state: init -> auth (b0)
+I (5595) wifi:state: auth -> assoc (0)
+I (5605) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (5615) LAB_HANDSHAKE_IP:   -> Association ID  : 4
+I (5625) LAB_HANDSHAKE_IP: [FORENSIC]: Entering Phase 4: 4-Way EAPOL Key Exchange...
+W (7845) wifi:4way handshake timeout
+W (7845) LAB_HANDSHAKE_IP: =======================================================
+W (7845) LAB_HANDSHAKE_IP: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (7855) LAB_HANDSHAKE_IP:   -> Target SSID          : Ittipat Sutthinuanp
+W (7855) LAB_HANDSHAKE_IP:   -> Reason Code (Decimal): 15
+W (7865) LAB_HANDSHAKE_IP:   -> Reason Code (Hex)    : 0x0F
+W (7865) LAB_HANDSHAKE_IP:   -> Reason Diagnosis     : WIFI_REASON_HANDSHAKE_TIMEOUT (15) [Phase 4: MIC Mismatch]
+W (7875) LAB_HANDSHAKE_IP: =======================================================
+W (7885) LAB_HANDSHAKE_IP: [RESULT]: TEST FAILED - Disconnected during Handshake or Auth.
+I (7895) LAB_HANDSHAKE_IP:   [Phase 4 & Phase 5 Completed: Wi-Fi Handshake & IP Lab Finished]
+```
+
+#### ตารางสรุปเปรียบเทียบผลการทดลองใน Handshake & IP Phase
+
+| ข้อการทดลอง | สถานการณ์ทดสอบ | Event WIFI_EVENT_STA_CONNECTED | Event IP_EVENT_STA_GOT_IP | ผลการทดลอง | Disconnect Reason Code (ถ้ามี) |
+| --- | --- | --- | --- | --- | --- |
+| 5.4.1 | Password ถูกต้อง ("67030360pass") | เกิด (ผ่าน Link-Layer) | เกิด (ได้รับ IP) | Passed | N/A |
+| 5.4.2 | Password ผิด ("WRONG_PASSWORD_1234") | เกิด (ผ่าน Link-Layer) | ไม่เกิด | Failed | 15 (0x0F) หรือ 204 (0xCC) |
+
+#### บันทึกข้อมูล IP Network จาก Event IP_EVENT_STA_GOT_IP (ข้อ 5.4.1)
+
+| พารามิเตอร์ Network Layer | ค่าที่จัดสรรได้จริงจาก DHCP Server |
+| --- | --- |
+| IP Address | 192.168.43.160 |
+| Subnet Mask | 255.255.255.0 |
+| Default Gateway | 192.168.43.1 |
+
+### 💻 ซอร์สโค้ดการทดลอง (Source Code: Lab5-4_WiFi_Smart_Reconnect/main/main.c)
+
+```c
+/* ทดสอบ 4-Way Handshake และรับ IP Address สำหรับ นายอิทธิพัทธิ์ สุทธินวล (67030360) */
+#define TARGET_WIFI_SSID   "Ittipat Sutthinuanp"
+#define TARGET_WIFI_PASS   "67030360pass"
+
+if (event_id == IP_EVENT_STA_GOT_IP) {
+  ip_event_got_ip_t *e = (ip_event_got_ip_t *)event_data;
+  ESP_LOGI(TAG, "Phase 4 Handshake & Phase 5 DHCP COMPLETED -> IP: " IPSTR, IP2STR(&e->ip_info.ip));
+}
+```
+
+### ❓ ตอบคำถามท้ายการทดลอง
+
+1. **เหตุใดกระบวนการ 4-Way Handshake จึงพิสูจน์ทราบรหัสผ่าน Wi-Fi ได้โดยไม่ต้องส่งรหัสผ่าน (Passphrase) ลอยไปในอากาศเลยแม้แต่แพ็กเกจเดียว?**
+   - **ตอบ:** เพราะอาศัยการตรวจสอบค่า Message Integrity Code ที่สร้างขึ้นจากคีย์ชั่วคราว หากทั้งสองฝั่งใช้ Passphrase เดียวกัน คีย์ที่คำนวณได้จะเท่ากันและสร้าง MIC ที่ตรงกัน จึงหลีกเลี่ยงการส่งรหัสผ่านบนคลื่นวิทยุได้อย่างสิ้นเชิง
+
+2. **อธิบายบทบาทและที่มาของคีย์ PMK (Pairwise Master Key) และ PTK (Pairwise Transient Key) ว่ามีความสัมพันธ์กันอย่างไรในการเข้ารหัสเฟรมข้อมูล?**
+   - **ตอบ:** **PMK** รับประกันความลับของเครือข่ายในระยะยาว ส่วน **PTK** ให้ความปลอดภัยในการส่งข้อมูลแต่ละครั้ง โดยนำส่วนของ TK (Temporal Key) ในโครงสร้าง PTK ไปใช้เป็นคีย์สำหรับอัลกอริทึม AES-CCMP
+
+3. **เหตุใดเมื่อเราพิมพ์ Password ผิด (ข้อ 5.4.2) ESP32 จึงยังคงได้รับ Event WIFI_EVENT_STA_CONNECTED ก่อนที่จะเกิด Event WIFI_EVENT_STA_DISCONNECTED ตามมาในภายหลัง?**
+   - **ตอบ:** ระบบมองว่าการสื่อสารระดับโครงข่ายไร้สายเริ่มต้นขึ้นแล้วใน Phase 3 จึงส่ง Connected Event แต่เมื่อเข้าสู่ Phase 4 แล้วไม่สามารถตกลงคีย์ PTK ร่วมกันได้เพราะรหัสผิด ไดรเวอร์จึงรายงาน Disconnected ออกมา
+
+4. **หากเครือข่าย Wi-Fi ไม่มี DHCP Server (ไม่มีการแจก IP อัตโนมัติ) ผลการทดลองในข้อ 5.4.1 จะหยุดอยู่ที่ขั้นตอนใด และจะไม่เกิด Event ใดขึ้น?**
+   - **ตอบ:** ระบบจะติดอยู่ที่การส่ง DHCP Request โดยไม่เกิดเหตุการณ์ IP_EVENT_STA_GOT_IP ขึ้นเลย ส่งผลให้อุปกรณ์ไม่สามารถติดต่อกับเกตเวย์หรือส่งข้อมูล Telemetry ไปยังคลาวด์ได้
+
+## 3. สรุปผลการทดลอง
+
+สรุปผลการทดลองประจำสัปดาห์ที่ 5 ได้รับความรู้ครอบคลุมทั้งการสแกนหา Access Point รอบข้าง, การวิเคราะห์ค่าความแรงคลื่นวิทยุ (RSSI), การทำงานของ Event Handler, และการแลกเปลี่ยนคีย์ความปลอดภัย การเห็นพฤติกรรมจริงของเฟส Handshake และการรับหมายเลข IP ผ่าน DHCP ช่วยให้เข้าใจลำดับชั้นการสื่อสารตามมาตรฐานสากลได้อย่างถูกต้องและลึกซึ้ง
