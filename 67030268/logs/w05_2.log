@@ -1,0 +1,51 @@
+I (485) main_task: Calling app_main()
+I (495) LAB_WIFI_CONN: ==================================================================
+I (495) LAB_WIFI_CONN:   Lab 5.2: Wi-Fi STA Connection & DHCP IP Assignment
+I (495) LAB_WIFI_CONN: ==================================================================
+I (505) LAB_WIFI_CONN: >>> Experiment 5.2.1: Normal Connection Test (Success)
+I (515) LAB_WIFI_CONN:   Target SSID: "Korn Daengthongp"
+I (525) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_set_config(WIFI_IF_STA, &wifi_config)
+I (535) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_start()
+I (545) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_START received
+I (545) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+I (555) LAB_WIFI_CONN: [FORENSIC]: esp_wifi_connect() returned ESP_OK (0x0)
+I (825) wifi:state: init -> auth (b0)
+I (835) wifi:state: auth -> assoc (0)
+I (845) wifi:state: assoc -> run (10)
+I (855) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (855) LAB_WIFI_CONN:   -> Connected to SSID : Korn Daengthongp
+I (865) LAB_WIFI_CONN:   -> BSSID            : 78:17:BE:C0:7D:A0
+I (865) LAB_WIFI_CONN:   -> Channel          : 6
+I (875) LAB_WIFI_CONN:   -> Auth Mode        : 3 (WPA2_PSK)
+I (1825) esp_netif_handlers: sta ip: 192.168.43.168, mask: 255.255.255.0, gw: 192.168.43.1
+I (1825) LAB_WIFI_CONN: [EVENT FORENSIC]: IP_EVENT_STA_GOT_IP received!
+I (1835) LAB_WIFI_CONN:   -> IP Address : 192.168.43.168
+I (1835) LAB_WIFI_CONN:   -> Netmask    : 255.255.255.0
+I (1845) LAB_WIFI_CONN:   -> Gateway    : 192.168.43.1
+I (1855) LAB_WIFI_CONN: [RESULT]: TEST PASSED - Connected to AP successfully!
+
+I (3505) LAB_WIFI_CONN: >>> Experiment 5.2.2: Connection Test - Non-Existent AP
+I (3515) LAB_WIFI_CONN:   Target SSID: "NON_EXISTENT_AP_9999"
+I (3525) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+W (5925) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (5925) LAB_WIFI_CONN:   -> Target SSID          : NON_EXISTENT_AP_9999
+W (5935) LAB_WIFI_CONN:   -> Reason Code (Decimal): 201
+W (5935) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0xC9
+W (5945) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_NO_AP_FOUND
+W (5955) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.
+
+I (9875) LAB_WIFI_CONN: >>> Experiment 5.2.3: Connection Test - Wrong Password (Auth/Handshake Fail)
+I (9885) LAB_WIFI_CONN:   Target SSID: "Korn Daengthongp"
+I (9895) LAB_WIFI_CONN:   Target Password: "WRONG_PASS_9999"
+I (9915) LAB_WIFI_CONN: [FORENSIC]: Call esp_wifi_connect()
+I (10215) wifi:state: init -> auth (b0)
+I (10225) wifi:state: auth -> assoc (0)
+I (10235) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+W (12415) wifi:4way handshake timeout
+W (12415) LAB_WIFI_CONN: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (12415) LAB_WIFI_CONN:   -> Target SSID          : Korn Daengthongp
+W (12425) LAB_WIFI_CONN:   -> Reason Code (Decimal): 204
+W (12425) LAB_WIFI_CONN:   -> Reason Code (Hex)    : 0xCC
+W (12435) LAB_WIFI_CONN:   -> Reason Description   : WIFI_REASON_HANDSHAKE_TIMEOUT
+W (12445) LAB_WIFI_CONN: [RESULT]: TEST FAILED - Disconnected event captured.
+I (12455) LAB_WIFI_CONN:   [Phase 2/3/4/5 Completed: Wi-Fi Connection Lab Finished]
