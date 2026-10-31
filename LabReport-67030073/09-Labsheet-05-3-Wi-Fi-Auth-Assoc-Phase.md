@@ -338,6 +338,21 @@ void app_main(void) {
 ## 7. คำถามท้ายการทดลอง (Post-Lab Questions)
 
 1. **Association ID (AID)** คืออะไร มีบทบาทอย่างไรใน Phase 3 และส่งคืนมาในโครงสร้างข้อมูลตัวแปรใด?
-2. เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event `WIFI_EVENT_STA_CONNECTED` ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?
+   * **ความหมาย:** Association ID (AID) คือ หมายเลขประจำตัว 16-bit ที่ Access Point (AP) เป็นผู้กำหนดและแจกจ่ายให้กับ Station (STA) แต่ละตัวที่เข้ามาเชื่อมต่อสำเร็จ
+   * **บทบาทใน Phase 3:** ใช้สำหรับระบุตัวตนและแยกแยะลูกข่ายแต่ละตัวภายในเครือข่าย BSS (Basic Service Set) เดียวกัน เพื่อให้ AP สามารถจัดการรับ-ส่งข้อมูล (Frames) รวมถึงบริหารจัดการสถานะพลังงาน (Power Saving Mode) ของลูกข่ายแต่ละตัวได้อย่างถูกต้อง
+   * **โครงสร้างข้อมูลใน ESP-IDF:** ถูกส่งคืนมาในโครงสร้างตัวแปรของ Event `WIFI_EVENT_STA_CONNECTED` ซึ่งคือโครงสร้าง **`wifi_event_sta_connected_t`** (โดยเก็บค่าไว้ในฟิลด์ `.aid`)
+2.. เหตุใดการเชื่อมต่อ Wi-Fi ความปลอดภัยแบบ WPA2-PSK จึงสามารถผ่าน Phase 2 (Authentication) และ Phase 3 (Association) จนเกิด Event `WIFI_EVENT_STA_CONNECTED` ได้สำเร็จ แม้ผู้ใช้จะป้อนรหัสผ่าน (Password) ผิด?
+   * **คำอธิบาย:** เนื่องจากกระบวนการตรวจสอบสิทธิ์ใน Phase 2 (Open System Authentication) และ Phase 3 (Association) เป็นการทำงานในระดับ **Link Layer (Layer 2)** ซึ่งทำหน้าที่เพียงตรวจสอบสถานะฮาร์ดแวร์, ความสามารถในการรองรับ (Capabilities) และการจับคู่ MAC Address เท่านั้น **โดยยังไม่มีการตรวจสอบรหัสผ่าน (PSK)**
+   * รหัสผ่าน (Password) จะถูกนำมาใช้ตรวจสอบในขั้นตอน **4-Way Handshake (Phase 4)** ซึ่งจะเกิดขึ้น *หลังจาก* ที่อุปกรณ์เชื่อมต่อเลเยอร์ลิงก์สำเร็จและเกิด Event `WIFI_EVENT_STA_CONNECTED` ไปแล้ว ดังนั้น แม้ผู้ใช้จะใส่รหัสผ่านผิด ตัวอุปกรณ์ก็ยังสามารถผ่าน Phase 2 และ 3 ได้สำเร็จชั่วคราวก่อนที่จะถูกตัดการเชื่อมต่อในขั้นตอน 4-Way Handshake ถัดไป
 3. หาก Router มีการตั้งค่า **MAC Address Filtering** (อนุญาตเฉพาะ MAC ที่ลงทะเบียน) ESP32 จะล้มเหลวในเฟสใด และจะส่ง Disconnect Reason Code ใดออกมา?
+   * **เฟสที่ล้มเหลว:** จะล้มเหลวใน **Phase 3 (Association)** เนื่องจาก Access Point จะปฏิเสธคำขอเชื่อมต่อ (Association Request) เมื่อตรวจสอบพบว่า MAC Address ของ ESP32 ไม่ได้อยู่ในรายชื่อที่อนุญาต
+   * **Disconnect Reason Code:** รหัสเหตุผลหลักที่มักจะถูกส่งออกมาคือ **`WIFI_REASON_ASSOC_DENIED`** (รหัส 12) หรือ `WIFI_REASON_NOT_AUTHED` / `WIFI_REASON_AUTH_EXPIRE` ขึ้นอยู่กับการตอบสนองของเฟิร์มแวร์ Router และ ESP-IDF
 4. สรุปความแตกต่างสำคัญระหว่างจุดสิ้นสุดของ **Phase 3 (Link-Layer Connected)** กับจุดสิ้นสุดของ **Phase 5 (IP Address Assigned)**
+   * **จุดสิ้นสุดของ Phase 3 (Link-Layer Connected):** 
+     * เป็นการเชื่อมต่อสำเร็จที่ระดับ **Layer 2 (Data Link Layer)** 
+     * อุปกรณ์จับคู่กับ Access Point สำเร็จ มี Association ID (AID) และสามารถรับ-ส่งข้อมูลข้าม MAC Address ได้แล้ว 
+     * **แต่ยังไม่มี IP Address** จึงยังไม่สามารถสื่อสารบนเครือข่าย IP หรืออินเทอร์เน็ตได้
+   * **จุดสิ้นสุดของ Phase 5 (IP Address Assigned):** 
+     * เป็นการเชื่อมต่อสำเร็จที่ระดับ **Layer 3 (Network Layer)** 
+     * อุปกรณ์ได้รับ IP Address, Subnet Mask, Gateway และ DNS เรียบร้อยแล้วผ่านกระบวนการ DHCP 
+     * ทำให้อุปกรณ์พร้อมใช้งานและสามารถสื่อสารรับ-ส่งข้อมูลบนเครือข่าย Local Network และอินเทอร์เน็ตได้อย่างสมบูรณ์
