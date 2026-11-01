@@ -1,0 +1,65 @@
+[source: 11]load:0x40080400,len:3860
+entry 0x40080638
+I (29) boot: ESP-IDF v5.5.1 2nd stage bootloader
+I (31) boot: chip revision: v3.1
+I (33) boot.esp32: SPI Speed      : 40MHz
+I (37) boot.esp32: SPI Mode       : DIO
+I (41) boot.esp32: SPI Flash Size : 2MB
+I (485) main_task: Calling app_main()
+I (485) LAB_WIFI_SCAN: [FORENSIC]: Call nvs_flash_init()
+I (515) LAB_WIFI_SCAN: [FORENSIC]: nvs_flash_init() returned ESP_OK (0x0)
+I (515) LAB_WIFI_SCAN: [FORENSIC]: Call esp_netif_init()
+I (525) LAB_WIFI_SCAN: [FORENSIC]: Call esp_event_loop_create_default()
+I (535) LAB_WIFI_SCAN: [FORENSIC]: Call esp_netif_create_default_wifi_sta()
+I (555) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_init(&cfg)
+I (645) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_init() returned ESP_OK (0x0)
+I (655) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_set_mode(WIFI_MODE_STA)
+I (665) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_start()
+I (765) wifi:mode : sta (84:1f:e8:39:81:71)
+I (765) wifi:enable tsf
+I (765) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_start() returned ESP_OK (0x0)
+I (765) LAB_WIFI_SCAN: ==================================================================
+I (775) LAB_WIFI_SCAN:   Lab 5.1: Wi-Fi Connection and Scanning Phase (ESP-IDF Forensic)
+I (775) LAB_WIFI_SCAN: ==================================================================
+I (795) LAB_WIFI_SCAN: >>> Experiment 5.1.1: General AP Scan (All Channels)
+I (815) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_start(scan_config, block=true)
+I (3325) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0) [Duration: 2510 ms]
+I (3325) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_get_ap_num(&ap_count)
+I (3325) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_num() returned ESP_OK (0x0), ap_count=8
+I (3335) LAB_WIFI_SCAN: [STATUS]: Scan SUCCESS
+I (3335) LAB_WIFI_SCAN: [AP COUNT]: 8 network(s) found
+
+No.  | SSID                     | MAC Address (BSSID) | RSSI   | Chan | Encryption Type
+
+1    | KMITL-WIFI               | 3C:E8:6E:FD:66:40 | -48  dBm | 6    | OPEN (No Password)
+
+2    | KMITL-Legacy             | 3C:E8:6E:FD:66:45 | -50  dBm | 6    | WPA2_ENTERPRISE
+
+3    | KMITL-IoT                | 3C:E8:6E:FD:66:41 | -53  dBm | 6    | WPA2_PSK
+
+4    | Lab-i                    | F6:51:A6:6B:45:18 | -58  dBm | 6    | WPA2_PSK
+
+5    | INNHA                    | D6:C4:83:DC:A9:EC | -60  dBm | 6    | WPA2_PSK
+
+6    | Suwimon Sripramaip           | 3C:E8:6E:FD:66:41 | -55  dBm | 1    | WPA2_PSK
+
+7    | [air purifier] Samsung   | 88:57:1D:08:CD:7F | -74  dBm | 1    | WPA2_PSK
+
+8    | IPR-422_2G_1507          | E8:49:43:06:15:07 | -82  dBm | 1    | WPA2_PSK
+
+I (4460) LAB_WIFI_SCAN: >>> Experiment 5.1.2: Channel-Specific Scan (Channel 1)
+I (4470) LAB_WIFI_SCAN: [FORENSIC]: Call esp_wifi_scan_start(scan_config, block=true)
+I (4668) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0) [Duration: 198 ms]
+I (4678) LAB_WIFI_SCAN: [STATUS]: Scan SUCCESS, ap_count=2
+
+No.  | SSID                     | MAC Address (BSSID) | RSSI   | Chan | Encryption Type
+
+1    | [air purifier] Samsung   | 88:57:1D:08:CD:7F | -72  dBm | 1    | WPA2_PSK
+
+2    | KMITL-IoT                | 3C:E8:6E:FD:C4:81 | -80  dBm | 1    | WPA2_PSK
+
+I (5208) LAB_WIFI_SCAN: >>> Experiment 5.1.4: Targeted SSID Scan - Non-Existent ("NON_EXISTENT_AP_9999")
+I (5218) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_start() returned ESP_OK (0x0)
+I (5228) LAB_WIFI_SCAN: [FORENSIC]: esp_wifi_scan_get_ap_num() returned ESP_OK (0x0), ap_count=0
+W (5228) LAB_WIFI_SCAN: [NOTE]: No Access Point found matching the criteria.
+I (5238) LAB_WIFI_SCAN:   [Phase 1 Completed: Wi-Fi Scan Finished]
