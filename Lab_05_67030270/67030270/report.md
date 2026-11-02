@@ -31,7 +31,8 @@ idf.py -p <PORT> flash monitor
 
 ### 📷 รูป: รูปที่ 1: แคปหน้าจอ Terminal ผลการสแกน Wi-Fi ในบริเวณรอบตัว พร้อมค่า RSSI
 
-![ภาพหน้าจอ Terminal แสดงตาราง SSID, ค่า RSSI (-dBm), Channel, และ Encryption Type](images/w05_1_p1.png)
+<img width="949" height="640" alt="image" src="https://github.com/user-attachments/assets/0d677d81-b482-4022-9503-bae993391ed5" />
+
 
 ### 💻 Serial Log: รายชื่อ Wi-Fi Hotspots และระดับความแรงสัญญาณ
 
