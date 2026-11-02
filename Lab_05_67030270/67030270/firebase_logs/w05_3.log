@@ -1,0 +1,31 @@
+I (485) main_task: Calling app_main()
+I (495) LAB_AUTH_ASSOC: ==================================================================
+I (495) LAB_AUTH_ASSOC:   Lab 5.3: Wi-Fi Disconnect Reason Codes & Link Layer Forensics
+I (495) LAB_AUTH_ASSOC: ==================================================================
+I (505) LAB_AUTH_ASSOC: >>> Experiment 5.3.1: Link-Layer Auth & Assoc Test - Existing AP
+I (515) LAB_AUTH_ASSOC:   Target SSID: "Kritsadinat Samrankitp"
+I (525) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_connect()
+I (785) wifi:state: init -> auth (b0)
+I (795) wifi:state: auth -> assoc (0)
+I (805) LAB_AUTH_ASSOC: =======================================================
+I (805) LAB_AUTH_ASSOC: [EVENT FORENSIC]: WIFI_EVENT_STA_CONNECTED received!
+I (815) LAB_AUTH_ASSOC:   -> Link Layer Auth & Assoc PASSED
+I (815) LAB_AUTH_ASSOC:   -> Connected to SSID : Kritsadinat Samrankitp
+I (825) LAB_AUTH_ASSOC:   -> BSSID            : 78:17:BE:C0:7D:A1
+I (825) LAB_AUTH_ASSOC:   -> Channel          : 1
+I (835) LAB_AUTH_ASSOC:   -> Association ID   : 3
+I (835) LAB_AUTH_ASSOC:   -> Auth Mode        : 3 (WPA2_PSK)
+I (845) LAB_AUTH_ASSOC: =======================================================
+I (855) LAB_AUTH_ASSOC: [RESULT]: TEST PASSED - Link Layer Association Established!
+
+I (3505) LAB_AUTH_ASSOC: >>> Experiment 5.3.2: Link-Layer Test - Non-Existent AP
+I (3515) LAB_AUTH_ASSOC:   Target SSID: "NON_EXISTENT_AP_9999"
+I (3525) LAB_AUTH_ASSOC: [FORENSIC]: Call esp_wifi_connect()
+W (7845) LAB_AUTH_ASSOC: =======================================================
+W (7845) LAB_AUTH_ASSOC: [EVENT FORENSIC]: WIFI_EVENT_STA_DISCONNECTED received!
+W (7855) LAB_AUTH_ASSOC:   -> Target SSID          : NON_EXISTENT_AP_9999
+W (7855) LAB_AUTH_ASSOC:   -> Reason Code (Decimal): 201
+W (7865) LAB_AUTH_ASSOC:   -> Reason Code (Hex)    : 0xC9
+W (7865) LAB_AUTH_ASSOC:   -> Reason Diagnosis     : WIFI_REASON_NO_AP_FOUND (201) [Phase 1: SSID Not Found]
+W (7875) LAB_AUTH_ASSOC: =======================================================
+W (7885) LAB_AUTH_ASSOC: [RESULT]: TEST FAILED - AP Discovery Failed during Scan Phase.
