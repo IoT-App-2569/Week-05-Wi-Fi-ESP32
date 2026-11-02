@@ -299,7 +299,8 @@ idf.py -p <PORT> flash monitor
 
 ### 📷 รูป: รูปที่ 1: ภาพหน้าจอ Terminal แสดงการทดสอบ Link Layer และ Reason Code
 
-![ภาพหน้าจอ Terminal แสดงการทดสอบ Link Layer และ Reason Code](images/w05_3_p1.png)
+<img width="974" height="446" alt="image" src="https://github.com/user-attachments/assets/fc7aac3f-2a90-41b1-8060-8ec209b38f20" />
+
 
 ### 💻 Serial Log: บันทึกข้อมูลระดับ Link Layer
 
